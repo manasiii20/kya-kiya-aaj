@@ -1,31 +1,35 @@
-import { Check, RotateCcw, Trash2, X } from 'lucide-react'
+import { Check, Flame, RotateCcw, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { todayKey } from '../lib/dates'
 import { db, patch, put, randomColor, remove, STICKY_COLORS, uid, type Task } from '../lib/db'
 import { ColorDots, Sheet } from './Sheet'
 import { Sticky } from './Sticky'
 
+const PRIORITY_LABELS = ['No rush', 'Low key', 'Kinda matters', 'Big deal'] as const
+
 // One sheet for adding and editing. New tasks always go on today.
 export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task | null; onClose: () => void }) {
   const [title, setTitle] = useState('')
   const [color, setColor] = useState(STICKY_COLORS[0])
+  const [priority, setPriority] = useState<0 | 1 | 2 | 3>(0)
 
   useEffect(() => {
     if (!open) return
     setTitle(task?.title ?? '')
     setColor(task?.color ?? randomColor())
+    setPriority(task?.priority ?? 0)
   }, [open, task])
 
   async function confirm() {
     const text = title.trim()
     if (!text) return
     if (task) {
-      await patch('tasks', task.id, { title: text, color })
+      await patch('tasks', task.id, { title: text, color, priority })
     } else {
       const day = todayKey()
       const sameDay = await db.tasks.where('date').equals(day).toArray()
       const order = sameDay.length ? Math.max(...sameDay.map((t) => t.order)) + 1 : 0
-      await put('tasks', { id: uid(), title: text, date: day, done: 0, order, color, deleted: 0 })
+      await put('tasks', { id: uid(), title: text, date: day, done: 0, order, color, priority, deleted: 0 })
     }
     onClose()
   }
@@ -36,7 +40,7 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
         <button className="icon-btn plain" aria-label="close" onClick={onClose}>
           <X size={20} />
         </button>
-        <h2>{task ? 'Edit task' : 'Add for today'}</h2>
+        <h2>{task ? 'Edit task' : 'Add a task'}</h2>
         <span />
       </div>
 
@@ -51,6 +55,25 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
           />
         </Sticky>
         <ColorDots colors={STICKY_COLORS} value={color} onChange={setColor} />
+        <div className="priority">
+          <div className="label">
+            How big a deal?
+            <b>{PRIORITY_LABELS[priority]}</b>
+          </div>
+          <div className="flame-picker">
+            {([1, 2, 3] as const).map((n) => (
+              <button
+                key={n}
+                aria-label={`priority ${n}`}
+                className={priority >= n ? 'on' : ''}
+                // Tapping the current level again clears it.
+                onClick={() => setPriority(priority === n ? 0 : n)}
+              >
+                <Flame size={20} fill={priority >= n ? 'currentColor' : 'none'} strokeWidth={1.8} />
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {task && (

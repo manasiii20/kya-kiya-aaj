@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { animate, AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Check, ChevronLeft, RotateCcw, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Sticky, StickyStack } from '../components/Sticky'
+import { Flames, Sticky, StickyStack } from '../components/Sticky'
 import { shower, swipeBurst } from '../lib/celebrate'
 import { cap, todayKey } from '../lib/dates'
 import { db, patch, put, type Question, type Task } from '../lib/db'
@@ -214,7 +214,10 @@ function CardFace({ card, pos, muted }: { card: Card; pos: string; muted?: boole
   if (card.kind === 'task') {
     return (
       <Sticky color={card.task.color} className="swipe-card" style={{ opacity: muted ? 0.9 : 1 }}>
-        <span className="swipe-pos">{pos}</span>
+        <span className="swipe-pos" style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {pos}
+          <Flames n={card.task.priority} />
+        </span>
         <div className="note-text swipe-text">{card.task.title}</div>
       </Sticky>
     )
@@ -239,7 +242,7 @@ function Done({ day, onAgain, onBack }: { day: string; onAgain: () => void; onBa
   return (
     <div style={{ textAlign: 'center' }}>
       <div className="swipe-panel">
-        <StickyStack items={stack} size={170} max={10} showText />
+        <StickyStack items={stack} size={150} max={10} showText />
       </div>
       <p style={{ fontSize: 20, fontWeight: 650, letterSpacing: '-0.01em', margin: '20px 0 6px' }}>
         {stack.length === 0 ? 'A quiet day. That is allowed.' : `${stack.length} thing${stack.length === 1 ? '' : 's'} done today.`}

@@ -4,10 +4,10 @@ import { ArrowRight, CalendarDays, Check, CheckCheck, GripVertical, LayoutGrid, 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Sheet } from '../components/Sheet'
-import { stackPad, Sticky, StickyStack, tilt } from '../components/Sticky'
+import { Flames, stackPad, Sticky, StickyStack, tilt } from '../components/Sticky'
 import { TaskSheet } from '../components/TaskSheet'
 import { pop } from '../lib/celebrate'
-import { addDays, cap, checklistNumber, ordinal, prettyDay, todayKey } from '../lib/dates'
+import { addDays, cap, checklistNumber, prettyDay, todayKey } from '../lib/dates'
 import { db, patch, patchMany, type Task } from '../lib/db'
 import { noteAfterTick } from '../lib/selfNotes'
 
@@ -185,7 +185,7 @@ export function Today({
   return (
     <>
       <header className="screen-head">
-        <h1>Notesee</h1>
+        <h1>notesee</h1>
         <div className="head-actions">
           {selecting ? (
             <button className="icon-btn" aria-label="stop selecting" onClick={endSelect}>
@@ -231,7 +231,7 @@ export function Today({
       )}
 
       <div className="toolbar">
-        <span className="checklist-no">Your {ordinal(checklistNumber(day))} checklist</span>
+        <span className="checklist-no">Checklist number {checklistNumber(day)}</span>
         {total > 0 && (
           <div className="segmented" aria-label="view">
             <button className={view === 'notes' ? 'on' : ''} aria-label="notes view" onClick={() => changeView('notes')}>
@@ -384,6 +384,9 @@ function NoteCard({
         >
           <Check16 on={!!task.done} />
         </button>
+        <span style={{ position: 'absolute', top: 16, right: 14, pointerEvents: 'none' }}>
+          <Flames n={task.priority} />
+        </span>
         <div className="note-text" style={{ position: 'relative', pointerEvents: 'none' }}>
           {task.title}
         </div>
@@ -426,6 +429,7 @@ function ListRow({
       <div className="title" {...handlers}>
         {task.title}
       </div>
+      <Flames n={task.priority} size={12} />
       <span className="swatch" style={{ background: task.color }} />
       {draggable ? (
         <span className="handle" onPointerDown={(e) => controls.start(e)} aria-label="drag to reorder">
