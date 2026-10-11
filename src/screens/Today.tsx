@@ -4,7 +4,7 @@ import { ArrowRight, CalendarDays, Check, CheckCheck, ChevronDown, GripVertical,
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Sheet } from '../components/Sheet'
-import { Sticky, StickyStack, tilt } from '../components/Sticky'
+import { stackPad, Sticky, StickyStack, tilt } from '../components/Sticky'
 import { TaskSheet } from '../components/TaskSheet'
 import { pop } from '../lib/celebrate'
 import { addDays, prettyDay, todayKey } from '../lib/dates'
@@ -119,8 +119,8 @@ export function Today({
         id: t.id,
         color: t.color,
         from: from.getBoundingClientRect(),
-        toLeft: to.left,
-        toTop: to.bottom - PILE - layers * Math.max(1.5, PILE * 0.035),
+        toLeft: to.left + stackPad(PILE),
+        toTop: to.bottom - PILE - layers * Math.max(1.5, PILE * 0.03),
       }
       setFlyers((f) => [...f, flyer])
       window.setTimeout(() => setFlyers((f) => f.filter((x) => x !== flyer)), 1100)
@@ -192,7 +192,7 @@ export function Today({
     <>
       <header className="screen-head">
         <h1>
-          kya kiya aaj{' '}
+          notes{' '}
           <button
             className="soft"
             onClick={() => setDayPicker(true)}
@@ -351,7 +351,7 @@ export function Today({
           key={f.id}
           className="fly"
           initial={{ left: f.from.left, top: f.from.top, width: f.from.width, height: f.from.height, rotate: 0 }}
-          animate={{ left: f.toLeft, top: f.toTop, width: PILE, height: PILE, rotate: tilt(f.id, 1.2) }}
+          animate={{ left: f.toLeft, top: f.toTop, width: PILE, height: PILE, rotate: tilt(f.id, 2) }}
           transition={{ duration: 0.5, ease: [0.32, 0.72, 0.3, 1] }}
           onAnimationComplete={() => setFlyers((all) => all.filter((x) => x.id !== f.id))}
         >

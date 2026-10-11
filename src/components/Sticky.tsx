@@ -52,8 +52,12 @@ export function Sticky({
 
 export type StackItem = { id: string; color: string; title?: string }
 
-// A neat pile of done notes: same footprint, a hair of rotation each, the edges of the
-// older ones showing underneath like a real pad. Newest on top.
+// A pile of done notes, the way paper actually lands: each one a little off to the left or
+// right and turned a few degrees, the older ones peeking out from under the newest.
+export function stackPad(size: number) {
+  return size * 0.12
+}
+
 export function StickyStack({
   items,
   size,
@@ -66,16 +70,20 @@ export function StickyStack({
   showText?: boolean
 }) {
   const visible = items.slice(-max)
-  const step = Math.max(1.5, size * 0.035)
+  const step = Math.max(1.5, size * 0.03)
   const lift = Math.max(0, visible.length - 1) * step
+  const pad = stackPad(size)
   const small = size < 50
   return (
-    <div style={{ position: 'relative', width: size, height: size + lift, flex: 'none' }}>
+    <div style={{ position: 'relative', width: size + pad * 2, height: size + lift + pad * 0.6, flex: 'none' }}>
       {visible.length === 0 && (
         <div
           style={{
             position: 'absolute',
-            inset: 0,
+            left: pad,
+            bottom: 0,
+            width: size,
+            height: size,
             borderRadius: 5,
             border: '1.5px dashed var(--ink-faint)',
             opacity: 0.6,
@@ -86,15 +94,18 @@ export function StickyStack({
         {visible.map((it, i) => {
           const depth = visible.length - 1 - i
           const isTop = depth === 0
-          const rotate = isTop ? tilt(it.id, 1.2) : tilt(it.id, 2.6)
+          // Alternate sides so the pile zig-zags instead of leaning one way.
+          const side = i % 2 === 0 ? 1 : -1
+          const x = isTop ? tilt(it.id + 'x', size * 0.025) : side * (size * 0.05 + Math.abs(tilt(it.id + 'x', size * 0.05)))
+          const rotate = isTop ? tilt(it.id, 2) : side * (1.5 + Math.abs(tilt(it.id, 3.5)))
           return (
             <motion.div
               key={it.id}
-              initial={{ y: -size * 0.5, opacity: 0, scale: 1.06, rotate: rotate + 4 }}
-              animate={{ y: 0, opacity: 1, scale: 1, rotate }}
+              initial={{ y: -size * 0.5, opacity: 0, scale: 1.06, rotate: rotate + 5, x }}
+              animate={{ y: 0, opacity: 1, scale: 1, rotate, x }}
               exit={{ opacity: 0 }}
               transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-              style={{ position: 'absolute', left: 0, bottom: i * step, zIndex: i }}
+              style={{ position: 'absolute', left: pad, bottom: i * step, zIndex: i }}
             >
               <Sticky
                 color={it.color}
@@ -102,8 +113,8 @@ export function StickyStack({
                 text={showText && isTop ? it.title : undefined}
                 fontSize={Math.max(11, size / 8)}
                 style={{
-                  filter: depth ? `brightness(${1 - Math.min(depth, 6) * 0.018})` : undefined,
-                  boxShadow: small ? '0 0.5px 1px rgba(0,0,0,.18)' : undefined,
+                  filter: depth ? `brightness(${1 - Math.min(depth, 6) * 0.015})` : undefined,
+                  boxShadow: small ? '0 0.5px 1.5px rgba(0,0,0,.2)' : undefined,
                   overflow: 'hidden',
                 }}
               />

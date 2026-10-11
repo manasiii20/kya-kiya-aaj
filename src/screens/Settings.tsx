@@ -210,7 +210,7 @@ function Backup() {
     const blob = new Blob([JSON.stringify({ app: 'kya-kiya-aaj', version: 1, at: Date.now(), ...dump })], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
-    a.download = `kya-kiya-aaj-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `notes-backup-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(a.href)
   }
@@ -218,7 +218,7 @@ function Backup() {
   async function importFile(file: File) {
     try {
       const data = JSON.parse(await file.text())
-      if (data.app !== 'kya-kiya-aaj') throw new Error('not a kya kiya aaj backup')
+      if (data.app !== 'kya-kiya-aaj') throw new Error('not a notes backup file')
       let n = 0
       for (const k of KINDS) {
         for (const row of data[k] ?? []) {
