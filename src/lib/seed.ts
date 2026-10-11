@@ -1,12 +1,12 @@
 import { db, STICKY_COLORS } from './db'
 
-const QUESTIONS: [string, string][] = [
-  ['💃', 'did you dance today?'],
-  ['💧', 'drank enough water?'],
-  ['🌤️', 'stepped outside for a bit?'],
-  ['😂', 'laughed at something dumb?'],
-  ['🍲', 'ate a proper meal?'],
-  ['📵', 'doomscrolled less than usual?'],
+const QUESTIONS = [
+  'did you dance today?',
+  'drank enough water?',
+  'stepped outside for a bit?',
+  'laughed at something dumb?',
+  'ate a proper meal?',
+  'doomscrolled less than usual?',
 ]
 
 const NOTES = [
@@ -26,7 +26,7 @@ export async function seedIfEmpty() {
   // local until edited, and any synced edit or deletion of them always wins.
   const base = { updatedAt: 1, deleted: 0 as const, dirty: 0 as const }
   await db.questions.bulkPut(
-    QUESTIONS.map(([emoji, text], i) => ({ ...base, id: `seed-q-${i}`, text, emoji, active: 1 as const, order: i })),
+    QUESTIONS.map((text, i) => ({ ...base, id: `seed-q-${i}`, text, active: 1 as const, order: i })),
   )
   await db.selfNotes.bulkPut(
     NOTES.map((text, i) => ({ ...base, id: `seed-n-${i}`, text, color: STICKY_COLORS[i % STICKY_COLORS.length] })),

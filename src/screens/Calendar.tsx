@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Layers } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Sheet } from '../components/Sheet'
 import { Sticky, StickyStack, tilt } from '../components/Sticky'
-import { fromKey, prettyDay, stampDay, toKey, todayKey } from '../lib/dates'
+import { fromKey, prettyDay, toKey, todayKey } from '../lib/dates'
 import { db, type Task } from '../lib/db'
 
 const DOW = ['m', 't', 'w', 't', 'f', 's', 's']
@@ -43,19 +43,16 @@ export function Calendar({ onReview }: { onReview: (day: string) => void }) {
   return (
     <>
       <header className="screen-head">
-        <div>
-          <div className="date">the wall</div>
-          <h1>all your piles</h1>
-        </div>
+        <h1>
+          the wall <span className="soft">of piles</span>
+        </h1>
       </header>
 
-      <div className="cal-head">
+      <div className="day-nav">
         <button className="icon-btn" aria-label="previous month" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}>
           <ChevronLeft size={18} />
         </button>
-        <span className="month">
-          {cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }).toLowerCase()}
-        </span>
+        <span>{cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }).toLowerCase()}</span>
         <button
           className="icon-btn"
           aria-label="next month"
@@ -86,10 +83,10 @@ export function Calendar({ onReview }: { onReview: (day: string) => void }) {
               onClick={() => setOpen(key)}
             >
               <span className="n">{fromKey(key).getDate()}</span>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', paddingBottom: 6 }}>
-                {items.length > 0 && <StickyStack items={items} size={24} step={3} max={6} />}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+                {items.length > 0 && <StickyStack items={items} size={26} max={6} />}
               </div>
-              {items.length > 6 && <span className="count">{items.length}</span>}
+              {items.length > 6 && <span className="more">{items.length}</span>}
             </motion.button>
           )
         })}
@@ -135,12 +132,13 @@ function DaySheet({
     <Sheet open={!!day} onClose={onClose}>
       {day && (
         <>
-          <div className="type" style={{ color: 'var(--accent)', fontSize: 13 }}>
-            {stampDay(day)}
+          <div className="sheet-head">
+            <span />
+            <h2>
+              {prettyDay(day)}, {items.length} done
+            </h2>
+            <span />
           </div>
-          <h2 style={{ marginTop: 4 }}>
-            {prettyDay(day)} · {items.length} done
-          </h2>
           {items.length === 0 ? (
             <p className="empty" style={{ paddingTop: 8 }}>
               nothing stacked this day. rest days count too.
@@ -150,11 +148,11 @@ function DaySheet({
               {items.map((t, i) => (
                 <motion.div
                   key={t.id}
-                  initial={{ opacity: 0, y: 30, rotate: 0 }}
-                  animate={{ opacity: 1, y: 0, rotate: tilt(t.id, 4) }}
-                  transition={{ delay: i * 0.04, type: 'spring', stiffness: 300, damping: 22 }}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0, rotate: tilt(t.id, 0.8) }}
+                  transition={{ delay: i * 0.04, type: 'spring', stiffness: 300, damping: 26 }}
                 >
-                  <Sticky color={t.color} text={t.title} fontSize={22} />
+                  <Sticky color={t.color} text={t.title} fontSize={15} />
                 </motion.div>
               ))}
             </div>
@@ -162,11 +160,9 @@ function DaySheet({
           {answers && answers.length > 0 && (
             <>
               <div className="section-label">also</div>
-              <div className="answers">
+              <div className="tags">
                 {answers.map((q) => (
-                  <span key={q.id}>
-                    {q.emoji} {q.text.replace(/\?$/, '')}
-                  </span>
+                  <span key={q.id}>{q.text.replace(/\?$/, '')}</span>
                 ))}
               </div>
             </>

@@ -4,7 +4,7 @@ import { Check, ChevronLeft, ChevronRight, RotateCcw, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { StickyStack } from '../components/Sticky'
 import { pop, shower } from '../lib/celebrate'
-import { addDays, prettyDay, stampDay, todayKey } from '../lib/dates'
+import { addDays, prettyDay, todayKey } from '../lib/dates'
 import { db, patch, patchMany, put, type Question, type Task } from '../lib/db'
 
 type Card = { kind: 'task'; task: Task } | { kind: 'question'; q: Question }
@@ -24,19 +24,12 @@ function buildDeck(tasks: Task[], questions: Question[]): Card[] {
 export function Review({ initialDay }: { initialDay?: string }) {
   const today = todayKey()
   const [day, setDay] = useState(initialDay ?? today)
-  useEffect(() => {
-    if (initialDay) setDay(initialDay)
-  }, [initialDay])
-
   const [phase, setPhase] = useState<'start' | 'deck' | 'end'>('start')
   const [deck, setDeck] = useState<Card[]>([])
   const [index, setIndex] = useState(0)
   const [results, setResults] = useState<Result[]>([])
 
-  const dayTasks = useLiveQuery(
-    () => db.tasks.where('date').equals(day).filter((t) => !t.deleted).toArray(),
-    [day],
-  )
+  const dayTasks = useLiveQuery(() => db.tasks.where('date').equals(day).filter((t) => !t.deleted).toArray(), [day])
   const questions = useLiveQuery(() => db.questions.filter((q) => !q.deleted && !!q.active).toArray(), [])
 
   useEffect(() => {
@@ -74,36 +67,43 @@ export function Review({ initialDay }: { initialDay?: string }) {
   return (
     <>
       <header className="screen-head">
-        <div>
-          <div className="date">{stampDay(day)}</div>
-          <h1>review your day</h1>
-        </div>
+        <h1>
+          review <span className="soft">your day</span>
+        </h1>
       </header>
 
-      <div className="cal-head" style={{ marginBottom: 8 }}>
+      <div className="day-nav">
         <button className="icon-btn" aria-label="previous day" onClick={() => setDay(addDays(day, -1))}>
           <ChevronLeft size={18} />
         </button>
-        <span className="type" style={{ fontWeight: 700 }}>
-          {prettyDay(day)}
-        </span>
-        <button className="icon-btn" aria-label="next day" disabled={day >= today} style={{ opacity: day >= today ? 0.3 : 1 }} onClick={() => setDay(addDays(day, 1))}>
+        <span>{prettyDay(day)}</span>
+        <button className="icon-btn" aria-label="next day" disabled={day >= today} onClick={() => setDay(addDays(day, 1))}>
           <ChevronRight size={18} />
         </button>
       </div>
 
       {phase === 'start' && (
-        <div style={{ textAlign: 'center', padding: '48px 8px 0' }}>
-          <StartStack />
-          <p className="type" style={{ fontSize: 20, lineHeight: 1.4, margin: '28px 0 6px' }}>
-            let's look at <span style={{ color: 'var(--accent)' }}>{prettyDay(day)}</span>.
+        <div style={{ textAlign: 'center', paddingTop: 'clamp(16px, 6dvh, 56px)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <StickyStack
+              size={150}
+              items={[
+                { id: 'a1', color: '#b9d7ff' },
+                { id: 'b22', color: '#ffc6c2' },
+                { id: 'c333', color: '#ffe08a', title: 'how was your day?' },
+              ]}
+              showText
+            />
+          </div>
+          <p style={{ fontSize: 22, fontWeight: 650, letterSpacing: '-0.01em', margin: '32px 0 8px' }}>
+            let's look at {prettyDay(day)}.
           </p>
-          <p className="type muted" style={{ fontSize: 14, margin: '0 0 28px' }}>
+          <p className="muted" style={{ fontSize: 15, margin: '0 0 28px', lineHeight: 1.5 }}>
             {taskCount + qCount === 0
               ? 'nothing to review yet.'
-              : `${taskCount} task${taskCount === 1 ? '' : 's'} · ${qCount} silly question${qCount === 1 ? '' : 's'}`}
+              : `${taskCount} task${taskCount === 1 ? '' : 's'} and ${qCount} silly question${qCount === 1 ? '' : 's'}.`}
             <br />
-            swipe right if you did it, left if not.
+            swipe right if you did it, left if you didn't.
           </p>
           <button className="btn primary block" disabled={taskCount + qCount === 0} onClick={start}>
             let's go
@@ -118,7 +118,7 @@ export function Review({ initialDay }: { initialDay?: string }) {
               <span key={i} className={i < index ? 'on' : ''} />
             ))}
           </div>
-          <Deck key={index} card={deck[index]} next={deck[index + 1]} day={day} pos={`${index + 1}/${deck.length}`} onAnswer={answer} />
+          <Deck key={index} card={deck[index]} next={deck[index + 1]} pos={`${index + 1} of ${deck.length}`} onAnswer={answer} />
         </>
       )}
 
@@ -127,38 +127,9 @@ export function Review({ initialDay }: { initialDay?: string }) {
   )
 }
 
-function StartStack() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <StickyStack
-        size={120}
-        step={7}
-        items={[
-          { id: 'a1', color: '#b9d7ff' },
-          { id: 'b22', color: '#ffc6c2' },
-          { id: 'c333', color: '#ffe08a', title: 'how was your day?' },
-        ]}
-        showText
-      />
-    </div>
-  )
-}
-
-function Deck({
-  card,
-  next,
-  day,
-  pos,
-  onAnswer,
-}: {
-  card: Card
-  next?: Card
-  day: string
-  pos: string
-  onAnswer: (c: Card, yes: boolean) => void
-}) {
+function Deck({ card, next, pos, onAnswer }: { card: Card; next?: Card; pos: string; onAnswer: (c: Card, yes: boolean) => void }) {
   const x = useMotionValue(0)
-  const rotate = useTransform(x, [-220, 220], [-14, 14])
+  const rotate = useTransform(x, [-240, 240], [-10, 10])
   const yesOpacity = useTransform(x, [20, 110], [0, 1])
   const noOpacity = useTransform(x, [-110, -20], [1, 0])
   const cardRef = useRef<HTMLDivElement>(null)
@@ -168,22 +139,25 @@ function Deck({
     if (done.current) return
     done.current = true
     if (yes) pop(cardRef.current)
-    void animate(x, yes ? 520 : -520, { duration: 0.28, ease: 'easeIn' }).then(() => onAnswer(card, yes))
+    void animate(x, yes ? 560 : -560, { duration: 0.28, ease: 'easeIn' }).then(() => onAnswer(card, yes))
   }
 
   return (
     <>
       <div className="deck">
         {next && (
-          <div className="card" style={{ ...cardStyle(next), transform: 'scale(0.94) translateY(14px) rotate(-2deg)', boxShadow: 'none', opacity: 0.8 }} />
+          <div
+            className={`card sticky ${next.kind === 'question' ? 'question' : ''}`}
+            style={{ ...cardBg(next), transform: 'scale(0.95) translateY(12px) rotate(-1.5deg)', opacity: 0.85 }}
+          />
         )}
         <motion.div
           ref={cardRef}
-          className="card"
-          style={{ ...cardStyle(card), x, rotate }}
-          initial={{ scale: 0.92, opacity: 0 }}
+          className={`card sticky ${card.kind === 'question' ? 'question' : ''}`}
+          style={{ ...cardBg(card), x, rotate }}
+          initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 32 }}
           drag="x"
           dragSnapToOrigin
           dragElastic={0.9}
@@ -191,33 +165,27 @@ function Deck({
             if (info.offset.x > 100 || info.velocity.x > 600) fling(true)
             else if (info.offset.x < -100 || info.velocity.x < -600) fling(false)
           }}
-          whileTap={{ cursor: 'grabbing' }}
         >
-          <div className="stamp-day">
-            <span>{stampDay(day)}</span>
+          <div className="card-top">
+            <span>{card.kind === 'task' ? 'task' : 'just checking'}</span>
             <span>{pos}</span>
           </div>
           {card.kind === 'task' ? (
             <>
-              <div className="q hand">{card.task.title}</div>
+              <div className="q note-text">{card.task.title}</div>
               <div className="hint">did you do it?</div>
             </>
           ) : (
             <>
-              <div className="q type">
-                <span>
-                  <span style={{ fontSize: 44, display: 'block', marginBottom: 12 }}>{card.q.emoji}</span>
-                  {card.q.text}
-                </span>
-              </div>
-              <div className="hint">yes or no. be honest :)</div>
+              <div className="q ask">{card.q.text}</div>
+              <div className="hint">yes or no. be honest.</div>
             </>
           )}
           <motion.div className="verdict yes" style={{ opacity: yesOpacity }}>
-            {card.kind === 'task' ? 'DID IT!' : 'YES'}
+            {card.kind === 'task' ? 'did it' : 'yes'}
           </motion.div>
           <motion.div className="verdict no" style={{ opacity: noOpacity }}>
-            {card.kind === 'task' ? 'NOPE' : 'NO'}
+            {card.kind === 'task' ? 'nope' : 'no'}
           </motion.div>
         </motion.div>
       </div>
@@ -233,60 +201,45 @@ function Deck({
   )
 }
 
-function cardStyle(card: Card) {
-  return card.kind === 'task'
-    ? { background: card.task.color }
-    : { background: '#ffffff', backgroundImage: 'radial-gradient(#ebe9e3 1px, transparent 1px)', backgroundSize: '16px 16px' }
+function cardBg(card: Card) {
+  return card.kind === 'task' ? { backgroundColor: card.task.color } : {}
 }
 
 function EndOfReview({ day, results, onAgain }: { day: string; results: Result[]; onAgain: () => void }) {
   const today = todayKey()
   const target = day < today ? today : addDays(day, 1)
-  const doneTasks = useLiveQuery(
-    () => db.tasks.where('date').equals(day).filter((t) => !t.deleted && !!t.done).toArray(),
-    [day],
-  )
-  const stack = useMemo(
-    () => [...(doneTasks ?? [])].sort((a, b) => (a.doneAt ?? 0) - (b.doneAt ?? 0)),
-    [doneTasks],
-  )
+  const doneTasks = useLiveQuery(() => db.tasks.where('date').equals(day).filter((t) => !t.deleted && !!t.done).toArray(), [day])
+  const stack = useMemo(() => [...(doneTasks ?? [])].sort((a, b) => (a.doneAt ?? 0) - (b.doneAt ?? 0)), [doneTasks])
   const missed = results.filter((r) => r.card.kind === 'task' && !r.yes).map((r) => (r.card as { task: Task }).task)
   const yesQs = results.filter((r) => r.card.kind === 'question' && r.yes).map((r) => (r.card as { q: Question }).q)
   const [handled, setHandled] = useState(false)
 
   return (
-    <div style={{ paddingTop: 12 }}>
-      <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 20px' }}>
-        <StickyStack items={stack} size={130} step={7} max={14} showText />
+    <div style={{ paddingTop: 16, textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0 24px' }}>
+        <StickyStack items={stack} size={150} max={10} showText />
       </div>
-      <p className="type" style={{ textAlign: 'center', fontSize: 20, margin: '0 0 6px' }}>
+      <p style={{ fontSize: 22, fontWeight: 650, letterSpacing: '-0.01em', margin: '0 0 6px' }}>
         {stack.length === 0 ? 'a quiet day. that is allowed.' : `${stack.length} thing${stack.length === 1 ? '' : 's'} done.`}
       </p>
-      <p className="type muted" style={{ textAlign: 'center', fontSize: 14, margin: 0 }}>
+      <p className="muted" style={{ fontSize: 15, margin: 0 }}>
         {stack.length === 0 ? 'tomorrow is a fresh pile.' : 'look at that pile. you made that.'}
       </p>
 
       {yesQs.length > 0 && (
-        <div className="answers" style={{ justifyContent: 'center', marginTop: 16 }}>
+        <div className="tags" style={{ justifyContent: 'center', marginTop: 18 }}>
           {yesQs.map((q) => (
-            <span key={q.id}>
-              {q.emoji} {q.text.replace(/\?$/, '')}
-            </span>
+            <span key={q.id}>{q.text.replace(/\?$/, '')}</span>
           ))}
         </div>
       )}
 
       <AnimatePresence>
         {missed.length > 0 && !handled && (
-          <motion.div
-            exit={{ opacity: 0, height: 0 }}
-            style={{ marginTop: 24, background: 'var(--surface)', borderRadius: 18, padding: 16 }}
-          >
-            <div className="type" style={{ fontWeight: 700, marginBottom: 4 }}>
-              {missed.length} didn't happen
-            </div>
-            <div className="muted" style={{ fontSize: 14, marginBottom: 12 }}>
-              bring them to {prettyDay(target)}, or let them go?
+          <motion.div exit={{ opacity: 0, height: 0 }} className="panel" style={{ marginTop: 24, textAlign: 'left' }}>
+            <div style={{ fontWeight: 650, marginBottom: 4 }}>{missed.length} didn't happen</div>
+            <div className="muted" style={{ fontSize: 14, marginBottom: 14 }}>
+              bring {missed.length === 1 ? 'it' : 'them'} to {prettyDay(target)}, or let {missed.length === 1 ? 'it' : 'them'} go?
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button

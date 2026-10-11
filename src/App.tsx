@@ -1,32 +1,42 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { CalendarDays, Layers, NotebookPen, Smile } from 'lucide-react'
+import { CalendarDays, Layers, NotebookPen, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Sticky } from './components/Sticky'
+import { TaskSheet } from './components/TaskSheet'
+import { todayKey } from './lib/dates'
 import type { SelfNote } from './lib/db'
 import { noteOnOpen, onSelfNote } from './lib/selfNotes'
 import { Calendar } from './screens/Calendar'
-import { Me } from './screens/Me'
 import { Review } from './screens/Review'
+import { Settings } from './screens/Settings'
 import { Today } from './screens/Today'
 
-type Tab = 'today' | 'review' | 'wall' | 'me'
+type Tab = 'today' | 'review' | 'wall'
 
 const TABS: { id: Tab; label: string; icon: typeof Layers }[] = [
-  { id: 'today', label: 'today', icon: NotebookPen },
+  { id: 'today', label: 'tasks', icon: NotebookPen },
   { id: 'review', label: 'review', icon: Layers },
   { id: 'wall', label: 'wall', icon: CalendarDays },
-  { id: 'me', label: 'me', icon: Smile },
 ]
 
 export function App() {
   const [tab, setTab] = useState<Tab>('today')
+  const [day, setDay] = useState(todayKey())
   const [reviewDay, setReviewDay] = useState<{ day: string; n: number } | undefined>()
+  const [adding, setAdding] = useState(false)
+  const [settings, setSettings] = useState(false)
   const [note, setNote] = useState<SelfNote | null>(null)
+  const [slot, setSlot] = useState<HTMLDivElement | null>(null)
 
   useEffect(() => {
     onSelfNote(setNote)
     const t = window.setTimeout(() => void noteOnOpen(), 900)
-    const onVisible = () => document.visibilityState === 'visible' && void noteOnOpen()
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      void noteOnOpen()
+      // Coming back the next morning should land on the new day.
+      setDay((d) => (d < todayKey() ? todayKey() : d))
+    }
     document.addEventListener('visibilitychange', onVisible)
     return () => {
       clearTimeout(t)
@@ -39,41 +49,64 @@ export function App() {
       <AnimatePresence mode="wait" initial={false}>
         <motion.main
           key={tab}
-          initial={{ opacity: 0, y: 8 }}
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.16 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.15 }}
         >
-          {tab === 'today' && <Today />}
+          {tab === 'today' && <Today day={day} setDay={setDay} onSettings={() => setSettings(true)} dockSlot={slot} />}
           {tab === 'review' && <Review key={reviewDay?.n} initialDay={reviewDay?.day} />}
           {tab === 'wall' && (
             <Calendar
-              onReview={(day) => {
-                setReviewDay({ day, n: Date.now() })
+              onReview={(d) => {
+                setReviewDay({ day: d, n: Date.now() })
                 setTab('review')
               }}
             />
           )}
-          {tab === 'me' && <Me />}
         </motion.main>
       </AnimatePresence>
 
-      <nav className="tabbar">
-        {TABS.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            className={tab === id ? 'on' : ''}
-            aria-label={label}
-            onClick={() => {
-              if (id === 'review') setReviewDay(undefined)
-              setTab(id)
-            }}
+      <div className="dock" style={{ bottom: 'calc(var(--dock-bottom) + 70px)' }} ref={setSlot} />
+      <div className="dock">
+        <nav className="tabbar">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              className={tab === id ? 'on' : ''}
+              aria-label={label}
+              onClick={() => {
+                if (id === 'review') setReviewDay(undefined)
+                setTab(id)
+              }}
+            >
+              <Icon size={20} />
+              <span className="label">{label}</span>
+            </button>
+          ))}
+        </nav>
+        {tab === 'today' && (
+          <motion.button className="fab" aria-label="add a task" whileTap={{ scale: 0.9 }} onClick={() => setAdding(true)}>
+            <Plus size={26} />
+          </motion.button>
+        )}
+      </div>
+
+      <TaskSheet open={adding} defaultDay={day} onClose={() => setAdding(false)} />
+
+      <AnimatePresence>
+        {settings && (
+          <motion.div
+            className="settings"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', stiffness: 360, damping: 38 }}
           >
-            <Icon size={20} />
-            <span className="label">{label}</span>
-          </button>
-        ))}
-      </nav>
+            <Settings onBack={() => setSettings(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {note && (
@@ -89,19 +122,19 @@ export function App() {
             <motion.button
               className="note-from-you"
               style={{ x: '-50%', y: '-50%' }}
-              initial={{ scale: 1.4, opacity: 0, rotate: 12 }}
-              animate={{ scale: 1, opacity: 1, rotate: -3 }}
-              exit={{ scale: 0.8, opacity: 0, rotate: -12 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 18 }}
+              initial={{ scale: 1.15, opacity: 0, rotate: 5 }}
+              animate={{ scale: 1, opacity: 1, rotate: -1.5 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
               onClick={() => setNote(null)}
             >
-              <Sticky color={note.color} style={{ padding: 20, textAlign: 'left' }}>
-                <div className="from">a note from you ✿</div>
-                <div className="txt" style={{ fontSize: 32 }}>
+              <Sticky color={note.color} style={{ padding: 22 }}>
+                <div className="from">a note from you</div>
+                <div className="note-text" style={{ fontSize: 22 }}>
                   {note.text}
                 </div>
               </Sticky>
-              <div className="type" style={{ color: '#fff', fontSize: 12, marginTop: 14 }}>
+              <div style={{ color: '#fff', fontSize: 13, fontWeight: 600, marginTop: 16, textAlign: 'center' }}>
                 tap to keep going
               </div>
             </motion.button>

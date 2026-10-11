@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { motion } from 'framer-motion'
-import { Download, Eye, EyeOff, Plus, Sparkles, Trash2, Upload } from 'lucide-react'
+import { ChevronLeft, Download, Eye, EyeOff, Plus, Trash2, Upload, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ColorDots, Sheet } from '../components/Sheet'
 import { Sticky, tilt } from '../components/Sticky'
@@ -8,19 +8,19 @@ import { db, KINDS, patch, put, randomColor, remove, STICKY_COLORS, uid, type Se
 import { getFrequency, noteNow, setFrequency, type Frequency } from '../lib/selfNotes'
 import { restoreAccount, saveAccount, syncNow, useSync } from '../lib/sync'
 
-export function Me() {
+export function Settings({ onBack }: { onBack: () => void }) {
   return (
-    <>
-      <header className="screen-head">
-        <div>
-          <div className="date">just for you</div>
-          <h1>little things</h1>
-        </div>
+    <div className="app">
+      <header className="screen-head" style={{ justifyContent: 'flex-start' }}>
+        <button className="icon-btn" aria-label="back" onClick={onBack}>
+          <ChevronLeft size={20} />
+        </button>
+        <h1>settings</h1>
       </header>
       <Notes />
       <Questions />
       <Backup />
-    </>
+    </div>
   )
 }
 
@@ -32,12 +32,14 @@ function Notes() {
   return (
     <section>
       <div className="section-label" style={{ marginTop: 0 }}>
-        notes to future you · they pop up now and then
+        notes to future you, they pop up now and then
       </div>
       <div className="notes-wall">
         {notes.map((n) => (
-          <motion.button key={n.id} whileTap={{ scale: 0.95 }} onClick={() => setEditing(n)} style={{ textAlign: 'left' }}>
-            <Sticky color={n.color} text={n.text} rotate={tilt(n.id, 3)} fontSize={21} />
+          <motion.button key={n.id} whileTap={{ scale: 0.96 }} onClick={() => setEditing(n)} style={{ textAlign: 'left' }}>
+            <Sticky color={n.color} rotate={tilt(n.id, 0.8)} className="note-card" style={{ justifyContent: 'flex-start' }}>
+              <div className="note-text">{n.text}</div>
+            </Sticky>
           </motion.button>
         ))}
         <motion.button
@@ -48,8 +50,8 @@ function Notes() {
           }}
           style={{
             aspectRatio: '1',
-            borderRadius: '6px 6px 18px 6px',
-            border: '2px dashed var(--ink-faint)',
+            borderRadius: 5,
+            border: '1.5px dashed var(--ink-faint)',
             color: 'var(--ink-soft)',
             display: 'flex',
             flexDirection: 'column',
@@ -78,7 +80,7 @@ function Notes() {
           </button>
         ))}
         <button className="chip" onClick={() => void noteNow()}>
-          <Sparkles size={13} style={{ verticalAlign: -2 }} /> show me one
+          show me one
         </button>
       </div>
 
@@ -105,34 +107,40 @@ function NoteSheet({ note, onClose }: { note: SelfNote | null; onClose: () => vo
   }
 
   return (
-    <Sheet open={!!note} onClose={save}>
+    <Sheet open={!!note} onClose={onClose}>
       {note && (
         <>
-          <Sticky color={color} style={{ padding: 16, marginBottom: 18, aspectRatio: 'auto', minHeight: 160 }}>
+          <div className="sheet-head">
+            <button className="icon-btn plain" aria-label="close" onClick={onClose}>
+              <X size={20} />
+            </button>
+            <h2>{note.updatedAt > 0 ? 'edit note' : 'a note to future you'}</h2>
+            <span />
+          </div>
+          <Sticky color={color} className="write-note">
             <textarea
-              className="txt"
               autoFocus={!note.text}
-              placeholder="something you'd want to hear on a bad day…"
+              placeholder="something you'd want to hear on a bad day"
               value={text}
+              maxLength={200}
               onChange={(e) => setText(e.target.value)}
-              rows={4}
-              style={{ width: '100%', border: 0, background: 'none', outline: 'none', fontSize: 28, resize: 'none' }}
             />
           </Sticky>
           <ColorDots colors={STICKY_COLORS} value={color} onChange={setColor} />
-          <div className="sheet-actions">
+          <div style={{ display: 'flex', gap: 8, marginTop: 22 }}>
             {note.updatedAt > 0 && (
               <button
-                className="btn danger"
+                className="btn"
+                style={{ flex: 1, color: 'var(--no)' }}
                 onClick={async () => {
                   await remove('selfNotes', note.id)
                   onClose()
                 }}
               >
-                <Trash2 size={18} /> delete
+                <Trash2 size={17} /> delete
               </button>
             )}
-            <button className="btn" onClick={save}>
+            <button className="btn primary" style={{ flex: 1.4 }} disabled={!text.trim()} onClick={save}>
               save
             </button>
           </div>
@@ -148,20 +156,14 @@ function Questions() {
 
   return (
     <section>
-      <div className="section-label">silly yes / no questions for the review deck</div>
+      <div className="section-label">silly yes or no questions for the review deck</div>
       <div className="card-list">
         {qs.map((q) => (
           <div key={q.id} className={`row ${q.active ? '' : 'off'}`}>
-            <input
-              className="inline"
-              aria-label="emoji"
-              defaultValue={q.emoji}
-              style={{ width: 32, textAlign: 'center', fontSize: 20, flex: 'none' }}
-              onBlur={(e) => e.target.value !== q.emoji && patch('questions', q.id, { emoji: e.target.value || '✨' })}
-            />
             <div className="grow">
               <input
                 className="inline"
+                key={q.updatedAt}
                 defaultValue={q.text}
                 onBlur={(e) => e.target.value.trim() && e.target.value !== q.text && patch('questions', q.id, { text: e.target.value.trim() })}
               />
@@ -182,12 +184,12 @@ function Questions() {
             if (!text) return
             setDraft('')
             const order = qs.length ? Math.max(...qs.map((q) => q.order)) + 1 : 0
-            await put('questions', { id: uid(), text, emoji: '✨', active: 1, order, deleted: 0 })
+            await put('questions', { id: uid(), text, active: 1, order, deleted: 0 })
           }}
         >
-          <Plus size={18} style={{ color: 'var(--ink-faint)', width: 32 }} />
+          <Plus size={18} style={{ color: 'var(--ink-faint)', flex: 'none' }} />
           <div className="grow">
-            <input className="inline" placeholder="did you sing in the shower?" value={draft} onChange={(e) => setDraft(e.target.value)} />
+            <input className="inline" placeholder="add one, like: sang in the shower?" value={draft} onChange={(e) => setDraft(e.target.value)} />
           </div>
         </form>
       </div>
@@ -249,7 +251,7 @@ function Backup() {
   return (
     <section>
       <div className="section-label">your data</div>
-      <div style={{ background: 'var(--surface)', borderRadius: 16, padding: 16 }}>
+      <div className="panel">
         <div className="sync-line">
           <span className={`dot ${sync.status === 'idle' ? 'ok' : sync.status === 'error' ? 'err' : ''}`} />
           {statusText}
@@ -276,14 +278,14 @@ function Backup() {
                     try {
                       if (mode === 'save') await saveAccount(email.trim())
                       else await restoreAccount(email.trim())
-                      setMsg('check your inbox for a link ✉️')
+                      setMsg('check your inbox for a link.')
                     } catch (err: any) {
                       setMsg(err.message)
                     }
                   }}
                 >
                   <input className="field" type="email" required placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  <button className="btn primary">{mode === 'save' ? 'save' : 'send'}</button>
+                  <button className="btn primary" style={{ flex: 'none' }}>{mode === 'save' ? 'save' : 'send'}</button>
                 </form>
                 <button className="muted" style={{ fontSize: 13, marginTop: 10, textDecoration: 'underline' }} onClick={() => setMode(mode === 'save' ? 'restore' : 'save')}>
                   {mode === 'save' ? 'i already have an account' : 'no, save this one instead'}

@@ -1,7 +1,5 @@
-import '@fontsource-variable/inter'
+import '@fontsource-variable/google-sans-flex'
 import '@fontsource/courier-prime/400.css'
-import '@fontsource/courier-prime/700.css'
-import '@fontsource/caveat/500.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'

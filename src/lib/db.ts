@@ -20,7 +20,6 @@ export interface Task extends Syncable {
 
 export interface Question extends Syncable {
   text: string
-  emoji: string
   active: 0 | 1
   order: number
 }
