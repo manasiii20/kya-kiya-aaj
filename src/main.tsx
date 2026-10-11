@@ -1,0 +1,20 @@
+import '@fontsource-variable/inter'
+import '@fontsource/courier-prime/400.css'
+import '@fontsource/courier-prime/700.css'
+import '@fontsource/caveat/500.css'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { registerSW } from 'virtual:pwa-register'
+import { App } from './App'
+import { seedIfEmpty } from './lib/seed'
+import { startSync } from './lib/sync'
+import './styles.css'
+
+registerSW({ immediate: true })
+void seedIfEmpty().then(startSync)
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
