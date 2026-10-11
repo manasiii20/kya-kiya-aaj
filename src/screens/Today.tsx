@@ -4,7 +4,7 @@ import { ArrowRight, CalendarDays, Check, CheckCheck, GripVertical, LayoutGrid, 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Sheet } from '../components/Sheet'
-import { Flames, stackPad, Sticky, StickyStack, tilt } from '../components/Sticky'
+import { Stars, stackPad, Sticky, StickyStack, tilt } from '../components/Sticky'
 import { TaskSheet } from '../components/TaskSheet'
 import { pop } from '../lib/celebrate'
 import { addDays, cap, checklistNumber, prettyDay, todayKey } from '../lib/dates'
@@ -384,8 +384,8 @@ function NoteCard({
         >
           <Check16 on={!!task.done} />
         </button>
-        <span style={{ position: 'absolute', top: 16, right: 14, pointerEvents: 'none' }}>
-          <Flames n={task.priority} />
+        <span style={{ position: 'absolute', top: 14, right: 12, pointerEvents: 'none' }}>
+          <Stars n={task.priority} />
         </span>
         <div className="note-text" style={{ position: 'relative', pointerEvents: 'none' }}>
           {task.title}
@@ -429,7 +429,7 @@ function ListRow({
       <div className="title" {...handlers}>
         {task.title}
       </div>
-      <Flames n={task.priority} size={12} />
+      <Stars n={task.priority} size={16} />
       <span className="swatch" style={{ background: task.color }} />
       {draggable ? (
         <span className="handle" onPointerDown={(e) => controls.start(e)} aria-label="drag to reorder">

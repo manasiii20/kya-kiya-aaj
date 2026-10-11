@@ -1,9 +1,9 @@
-import { Check, Flame, RotateCcw, Trash2, X } from 'lucide-react'
+import { Check, RotateCcw, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { todayKey } from '../lib/dates'
 import { db, patch, put, randomColor, remove, STICKY_COLORS, uid, type Task } from '../lib/db'
 import { ColorDots, Sheet } from './Sheet'
-import { Sticky } from './Sticky'
+import { StarSticker, Sticky } from './Sticky'
 
 const PRIORITY_LABELS = ['No rush', 'Low key', 'Kinda matters', 'Big deal'] as const
 
@@ -47,7 +47,6 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
       <div className="write-panel">
         <Sticky color={color} className="write-note">
           <textarea
-            autoFocus={!task}
             placeholder="tap to write"
             value={title}
             maxLength={160}
@@ -60,7 +59,7 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
             How big a deal?
             <b>{PRIORITY_LABELS[priority]}</b>
           </div>
-          <div className="flame-picker">
+          <div className="star-picker">
             {([1, 2, 3] as const).map((n) => (
               <button
                 key={n}
@@ -69,7 +68,7 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
                 // Tapping the current level again clears it.
                 onClick={() => setPriority(priority === n ? 0 : n)}
               >
-                <Flame size={20} fill={priority >= n ? 'currentColor' : 'none'} strokeWidth={1.8} />
+                <StarSticker size={30} rotate={[-10, 6, -4][n - 1]} off={priority < n} />
               </button>
             ))}
           </div>

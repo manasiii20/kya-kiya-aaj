@@ -16,7 +16,7 @@ export interface Task extends Syncable {
   order: number
   color: string
   letGo?: 0 | 1 // unfinished and consciously released, never nagged about again
-  priority?: 0 | 1 | 2 | 3 // how big a deal, shown as flames; 0 or missing = no rush
+  priority?: 0 | 1 | 2 | 3 // how big a deal, shown as star stickers; 0 or missing = no rush
 }
 
 export interface Question extends Syncable {

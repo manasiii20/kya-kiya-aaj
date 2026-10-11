@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { animate, AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Check, ChevronLeft, RotateCcw, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Flames, Sticky, StickyStack } from '../components/Sticky'
+import { Stars, Sticky, StickyStack } from '../components/Sticky'
 import { shower, swipeBurst } from '../lib/celebrate'
 import { cap, todayKey } from '../lib/dates'
 import { db, patch, put, type Question, type Task } from '../lib/db'
@@ -216,7 +216,7 @@ function CardFace({ card, pos, muted }: { card: Card; pos: string; muted?: boole
       <Sticky color={card.task.color} className="swipe-card" style={{ opacity: muted ? 0.9 : 1 }}>
         <span className="swipe-pos" style={{ display: 'flex', justifyContent: 'space-between' }}>
           {pos}
-          <Flames n={card.task.priority} />
+          <Stars n={card.task.priority} />
         </span>
         <div className="note-text swipe-text">{card.task.title}</div>
       </Sticky>

@@ -896,11 +896,13 @@ textarea {
   color: var(--no);
 }
 
-.flames {
+.stars {
   display: inline-flex;
-  gap: 1px;
-  color: #2b2822;
-  opacity: 0.6;
+  gap: 0;
+}
+
+.stars svg + svg {
+  margin-left: -2px;
 }
 
 .priority {
@@ -927,24 +929,21 @@ textarea {
   margin-top: 2px;
 }
 
-.flame-picker {
+.star-picker {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
 
-.flame-picker button {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+.star-picker button {
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
-  color: var(--ink-faint);
-  background: var(--bg);
+  transition: transform 0.15s;
 }
 
-.flame-picker button.on {
-  color: #f0612e;
-  background: #fff0e8;
+.star-picker button:active {
+  transform: scale(0.85);
 }
 
 .swipe-btn {

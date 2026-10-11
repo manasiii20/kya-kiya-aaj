@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Flame, PenLine } from 'lucide-react'
+import { PenLine } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 
 // Stable pseudo-random value in [-range, range] per id, so a note always sits the same way.
@@ -148,13 +148,41 @@ function EmptyPile({ size, pad }: { size: number; pad: number }) {
   )
 }
 
-// Priority as little flames. 0 shows nothing.
-export function Flames({ n, size = 13 }: { n?: number; size?: number }) {
+// A star sticker: yellow star, thick white die-cut border, soft shadow like it's stuck on.
+export function StarSticker({ size = 16, rotate = 0, off = false }: { size?: number; rotate?: number; off?: boolean }) {
+  const border = Math.max(1.6, size * 0.14)
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="-2 -2 28 28"
+      aria-hidden
+      style={{
+        transform: `rotate(${rotate}deg)`,
+        filter: off ? 'grayscale(1) opacity(.35)' : 'drop-shadow(0 1px 1.2px rgba(60,40,0,.28))',
+        overflow: 'visible',
+        flex: 'none',
+      }}
+    >
+      <path
+        d="M12 1.8l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.9l-6.4 3.5 1.4-7.1-5.3-5 7.2-.9z"
+        fill="#ffcf33"
+        stroke="#fff"
+        strokeWidth={border * (24 / size)}
+        strokeLinejoin="round"
+        paintOrder="stroke"
+      />
+    </svg>
+  )
+}
+
+// Priority as a few stuck-on stars. 0 shows nothing.
+export function Stars({ n, size = 19 }: { n?: number; size?: number }) {
   if (!n) return null
   return (
-    <span className="flames" aria-label={`priority ${n} of 3`}>
+    <span className="stars" aria-label={`priority ${n} of 3`}>
       {Array.from({ length: n }, (_, i) => (
-        <Flame key={i} size={size} fill="currentColor" strokeWidth={1.5} />
+        <StarSticker key={i} size={size} rotate={[-12, 8, -4][i]} />
       ))}
     </span>
   )
