@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { CalendarDays, Layers, NotebookPen, Plus } from 'lucide-react'
+import { Layers, NotebookPen, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Sticky } from './components/Sticky'
 import { TaskSheet } from './components/TaskSheet'
@@ -8,15 +8,13 @@ import type { SelfNote } from './lib/db'
 import { noteOnOpen, onSelfNote } from './lib/selfNotes'
 import { Calendar } from './screens/Calendar'
 import { Review } from './screens/Review'
-import { Settings } from './screens/Settings'
 import { Today } from './screens/Today'
 
-type Tab = 'today' | 'review' | 'wall'
+type Tab = 'today' | 'review'
 
 const TABS: { id: Tab; label: string; icon: typeof Layers }[] = [
   { id: 'today', label: 'tasks', icon: NotebookPen },
   { id: 'review', label: 'review', icon: Layers },
-  { id: 'wall', label: 'wall', icon: CalendarDays },
 ]
 
 export function App() {
@@ -24,7 +22,7 @@ export function App() {
   const [day, setDay] = useState(todayKey())
   const [reviewDay, setReviewDay] = useState<{ day: string; n: number } | undefined>()
   const [adding, setAdding] = useState(false)
-  const [settings, setSettings] = useState(false)
+  const [wall, setWall] = useState(false)
   const [note, setNote] = useState<SelfNote | null>(null)
   const [slot, setSlot] = useState<HTMLDivElement | null>(null)
 
@@ -54,16 +52,8 @@ export function App() {
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.15 }}
         >
-          {tab === 'today' && <Today day={day} setDay={setDay} onSettings={() => setSettings(true)} dockSlot={slot} />}
+          {tab === 'today' && <Today day={day} setDay={setDay} onWall={() => setWall(true)} dockSlot={slot} />}
           {tab === 'review' && <Review key={reviewDay?.n} initialDay={reviewDay?.day} />}
-          {tab === 'wall' && (
-            <Calendar
-              onReview={(d) => {
-                setReviewDay({ day: d, n: Date.now() })
-                setTab('review')
-              }}
-            />
-          )}
         </motion.main>
       </AnimatePresence>
 
@@ -85,25 +75,32 @@ export function App() {
             </button>
           ))}
         </nav>
-        {tab === 'today' && (
+        {tab === 'today' && day === todayKey() && (
           <motion.button className="fab" aria-label="add a task" whileTap={{ scale: 0.9 }} onClick={() => setAdding(true)}>
             <Plus size={26} />
           </motion.button>
         )}
       </div>
 
-      <TaskSheet open={adding} defaultDay={day} onClose={() => setAdding(false)} />
+      <TaskSheet open={adding} onClose={() => setAdding(false)} />
 
       <AnimatePresence>
-        {settings && (
+        {wall && (
           <motion.div
-            className="settings"
+            className="overlay"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 360, damping: 38 }}
           >
-            <Settings onBack={() => setSettings(false)} />
+            <Calendar
+              onBack={() => setWall(false)}
+              onReview={(d) => {
+                setWall(false)
+                setReviewDay({ day: d, n: Date.now() })
+                setTab('review')
+              }}
+            />
           </motion.div>
         )}
       </AnimatePresence>

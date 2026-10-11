@@ -9,7 +9,7 @@ import { db, type Task } from '../lib/db'
 
 const DOW = ['m', 't', 'w', 't', 'f', 's', 's']
 
-export function Calendar({ onReview }: { onReview: (day: string) => void }) {
+export function Calendar({ onBack, onReview }: { onBack: () => void; onReview: (day: string) => void }) {
   const today = todayKey()
   const [cursor, setCursor] = useState(() => {
     const d = new Date()
@@ -41,8 +41,11 @@ export function Calendar({ onReview }: { onReview: (day: string) => void }) {
   const isCurrentMonth = first.slice(0, 7) === today.slice(0, 7)
 
   return (
-    <>
-      <header className="screen-head">
+    <div className="app">
+      <header className="screen-head" style={{ justifyContent: 'flex-start' }}>
+        <button className="icon-btn" aria-label="back" onClick={onBack}>
+          <ChevronLeft size={20} />
+        </button>
         <h1>
           the wall <span className="soft">of piles</span>
         </h1>
@@ -103,7 +106,7 @@ export function Calendar({ onReview }: { onReview: (day: string) => void }) {
       </div>
 
       <DaySheet day={open} items={open ? byDay.get(open) ?? [] : []} onClose={() => setOpen(null)} onReview={onReview} />
-    </>
+    </div>
   )
 }
 

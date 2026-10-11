@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png'],
       manifest: {
-        name: 'notes',
-        short_name: 'notes',
+        name: 'notesee',
+        short_name: 'notesee',
         description: 'a little daily log that keeps you going',
         theme_color: '#f3f2ef',
         background_color: '#f3f2ef',

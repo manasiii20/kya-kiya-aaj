@@ -207,7 +207,7 @@ function cardBg(card: Card) {
 
 function EndOfReview({ day, results, onAgain }: { day: string; results: Result[]; onAgain: () => void }) {
   const today = todayKey()
-  const target = day < today ? today : addDays(day, 1)
+  const target = today
   const doneTasks = useLiveQuery(() => db.tasks.where('date').equals(day).filter((t) => !t.deleted && !!t.done).toArray(), [day])
   const stack = useMemo(() => [...(doneTasks ?? [])].sort((a, b) => (a.doneAt ?? 0) - (b.doneAt ?? 0)), [doneTasks])
   const missed = results.filter((r) => r.card.kind === 'task' && !r.yes).map((r) => (r.card as { task: Task }).task)
@@ -235,7 +235,7 @@ function EndOfReview({ day, results, onAgain }: { day: string; results: Result[]
       )}
 
       <AnimatePresence>
-        {missed.length > 0 && !handled && (
+        {day < today && missed.length > 0 && !handled && (
           <motion.div exit={{ opacity: 0, height: 0 }} className="panel" style={{ marginTop: 24, textAlign: 'left' }}>
             <div style={{ fontWeight: 650, marginBottom: 4 }}>{missed.length} didn't happen</div>
             <div className="muted" style={{ fontSize: 14, marginBottom: 14 }}>

@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion'
-import { ArrowRight, CalendarDays, Check, CheckCheck, ChevronDown, GripVertical, LayoutGrid, List, RotateCcw, Settings, Trash2, X } from 'lucide-react'
+import { ArrowRight, CalendarDays, Check, CheckCheck, GripVertical, LayoutGrid, List, RotateCcw, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Sheet } from '../components/Sheet'
@@ -11,7 +11,6 @@ import { addDays, prettyDay, todayKey } from '../lib/dates'
 import { db, patch, patchMany, type Task } from '../lib/db'
 import { noteAfterTick } from '../lib/selfNotes'
 
-type Filter = 'all' | 'todo' | 'done'
 type View = 'notes' | 'list'
 type Flyer = { id: string; color: string; from: DOMRect; toLeft: number; toTop: number }
 
@@ -62,12 +61,12 @@ function useLongPress(onTap: () => void, onHold: () => void) {
 export function Today({
   day,
   setDay,
-  onSettings,
+  onWall,
   dockSlot,
 }: {
   day: string
   setDay: (d: string) => void
-  onSettings: () => void
+  onWall: () => void
   dockSlot: HTMLElement | null
 }) {
   const today = todayKey()
@@ -88,7 +87,6 @@ export function Today({
   const finished = useMemo(() => live.filter((t) => t.done).sort((a, b) => (a.doneAt ?? 0) - (b.doneAt ?? 0)), [live])
 
   const [view, setView] = useState<View>(loadView)
-  const [filter, setFilter] = useState<Filter>('all')
   function changeView(v: View) {
     setView(v)
     try {
@@ -159,20 +157,18 @@ export function Today({
     setSelecting(false)
     setSelected(new Set())
   }
-  async function bulk(action: 'done' | 'tomorrow' | 'delete') {
+  async function bulk(action: 'done' | 'delete') {
     const ids = [...selected]
     if (action === 'done') {
       await patchMany('tasks', ids.filter((id) => !live.find((t) => t.id === id)?.done), { done: 1, doneAt: Date.now() })
       pop(pileRef.current)
     }
-    if (action === 'tomorrow') await patchMany('tasks', ids, { date: addDays(day, 1), done: 0, doneAt: undefined, order: Date.now() })
     if (action === 'delete') await patchMany('tasks', ids, { deleted: 1 })
     endSelect()
   }
 
   const [editing, setEditing] = useState<Task | null>(null)
   const [leftoverOpen, setLeftoverOpen] = useState(false)
-  const [dayPicker, setDayPicker] = useState(false)
 
   function tap(t: Task) {
     if (selecting) toggleSelect(t.id)
@@ -183,33 +179,24 @@ export function Today({
     toggleSelect(t.id)
   }
 
-  const shownOpen = filter === 'done' ? [] : view === 'list' ? ordered : open
-  const shownDone = filter === 'todo' ? [] : finished
+  const shownOpen = view === 'list' ? ordered : open
+  const shownDone = finished
+  const yesterday = addDays(today, -1)
   const total = live.length
   const doneCount = finished.length
 
   return (
     <>
       <header className="screen-head">
-        <h1>
-          notes{' '}
-          <button
-            className="soft"
-            onClick={() => setDayPicker(true)}
-            style={{ font: 'inherit', display: 'inline-flex', alignItems: 'center', gap: 2 }}
-          >
-            {prettyDay(day)}
-            <ChevronDown size={20} strokeWidth={2.5} />
-          </button>
-        </h1>
+        <h1>notesee</h1>
         <div className="head-actions">
           {selecting ? (
             <button className="icon-btn" aria-label="stop selecting" onClick={endSelect}>
               <X size={19} />
             </button>
           ) : (
-            <button className="icon-btn" aria-label="settings" onClick={onSettings}>
-              <Settings size={19} />
+            <button className="icon-btn" aria-label="the wall" onClick={onWall}>
+              <CalendarDays size={19} />
             </button>
           )}
         </div>
@@ -246,15 +233,15 @@ export function Today({
         </button>
       )}
 
-      {total > 0 && (
-        <div className="toolbar">
-          <div className="segmented" aria-label="filter">
-            {(['all', 'todo', 'done'] as Filter[]).map((f) => (
-              <button key={f} className={filter === f ? 'on' : ''} onClick={() => setFilter(f)}>
-                {f === 'todo' ? 'to do' : f}
-              </button>
-            ))}
-          </div>
+      <div className="toolbar">
+        <div className="segmented" aria-label="day">
+          {[yesterday, today].map((d) => (
+            <button key={d} className={day === d ? 'on' : ''} onClick={() => setDay(d)}>
+              {prettyDay(d)}
+            </button>
+          ))}
+        </div>
+        {total > 0 && (
           <div className="segmented" aria-label="view">
             <button className={view === 'notes' ? 'on' : ''} aria-label="notes view" onClick={() => changeView('notes')}>
               <LayoutGrid size={16} />
@@ -263,16 +250,12 @@ export function Today({
               <List size={17} />
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {shownOpen.length + shownDone.length === 0 ? (
         <div className="empty">
-          {total === 0
-            ? `what would make ${day === today ? 'today' : 'this day'} feel okay?\ntap + to add it.`
-            : filter === 'done'
-              ? 'nothing ticked yet. no rush.'
-              : 'all done. go do something nice.'}
+          {day === today ? 'what would make today feel okay?\ntap + to add it.' : 'nothing written down yesterday.\nthat is okay too.'}
         </div>
       ) : view === 'notes' ? (
         <ul className="note-grid">
@@ -330,9 +313,6 @@ export function Today({
             <button className="btn" disabled={!selected.size} onClick={() => bulk('done')}>
               <CheckCheck size={18} /> done
             </button>
-            <button className="btn" disabled={!selected.size} onClick={() => bulk('tomorrow')}>
-              <ArrowRight size={18} /> tomorrow
-            </button>
             <button
               className="btn"
               style={{ flex: 'none', width: 56, color: 'var(--no)' }}
@@ -359,17 +339,9 @@ export function Today({
         </motion.div>
       ))}
 
-      <TaskSheet open={!!editing} task={editing} defaultDay={day} onClose={() => setEditing(null)} />
+      <TaskSheet open={!!editing} task={editing} onClose={() => setEditing(null)} />
       <LeftoverSheet open={leftoverOpen} tasks={leftovers} day={today} onClose={() => setLeftoverOpen(false)} />
-      <DayPicker
-        open={dayPicker}
-        day={day}
-        onPick={(d) => {
-          setDay(d)
-          setDayPicker(false)
-        }}
-        onClose={() => setDayPicker(false)}
-      />
+
     </>
   )
 }
@@ -488,45 +460,6 @@ function ListRow({
     >
       {inner}
     </Reorder.Item>
-  )
-}
-
-function DayPicker({ open, day, onPick, onClose }: { open: boolean; day: string; onPick: (d: string) => void; onClose: () => void }) {
-  const today = todayKey()
-  const ref = useRef<HTMLInputElement>(null)
-  const options = [addDays(today, -1), today, addDays(today, 1)]
-  return (
-    <Sheet open={open} onClose={onClose}>
-      <div className="sheet-head">
-        <button className="icon-btn plain" aria-label="close" onClick={onClose}>
-          <X size={20} />
-        </button>
-        <h2>which day?</h2>
-        <span />
-      </div>
-      <div className="chips" style={{ justifyContent: 'center', marginBottom: 8 }}>
-        {options.map((d) => (
-          <button key={d} className={`chip ${d === day ? 'on' : ''}`} onClick={() => onPick(d)}>
-            {prettyDay(d)}
-          </button>
-        ))}
-        <button
-          className={`chip ${!options.includes(day) ? 'on' : ''}`}
-          style={{ position: 'relative' }}
-          onClick={() => {
-            const el = ref.current
-            try {
-              el?.showPicker()
-            } catch {
-              el?.focus()
-            }
-          }}
-        >
-          <CalendarDays size={15} /> {options.includes(day) ? 'pick a date' : prettyDay(day)}
-          <input ref={ref} className="date-input" type="date" value={day} onChange={(e) => e.target.value && onPick(e.target.value)} />
-        </button>
-      </div>
-    </Sheet>
   )
 }
 
