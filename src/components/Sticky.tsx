@@ -13,7 +13,7 @@ export function Sticky({
   color,
   text,
   size,
-  fontSize = 15,
+  fontSize = 13,
   rotate = 0,
   className = '',
   style,
@@ -71,10 +71,10 @@ export function StickyStack({
   showText?: boolean
 }) {
   const visible = items.slice(-max)
-  const step = Math.max(1.5, size * 0.03)
+  const small = size < 50
+  const step = Math.max(small ? 2.5 : 1.5, size * 0.03)
   const lift = Math.max(0, visible.length - 1) * step
   const pad = stackPad(size)
-  const small = size < 50
   return (
     <div style={{ position: 'relative', width: size + pad * 2, height: size + lift + pad * 0.6, flex: 'none' }}>
       {visible.length === 0 && <EmptyPile size={size} pad={pad} />}
@@ -99,10 +99,10 @@ export function StickyStack({
                 color={it.color}
                 size={size}
                 text={showText && isTop ? it.title : undefined}
-                fontSize={Math.max(11, size / 8)}
+                fontSize={Math.max(9, size / 8 - 2)}
                 style={{
                   filter: depth ? `brightness(${1 - Math.min(depth, 6) * 0.015})` : undefined,
-                  boxShadow: small ? '0 0.5px 1.5px rgba(0,0,0,.2)' : undefined,
+                  boxShadow: small ? '0 0 0 0.5px rgba(0,0,0,.06), 0 1.5px 2.5px rgba(40,30,0,.18)' : undefined,
                   overflow: 'hidden',
                 }}
               />
@@ -159,14 +159,14 @@ export function StarSticker({ size = 16, rotate = 0, off = false }: { size?: num
       aria-hidden
       style={{
         transform: `rotate(${rotate}deg)`,
-        filter: off ? 'grayscale(1) opacity(.35)' : 'drop-shadow(0 1px 1.2px rgba(60,40,0,.28))',
+        filter: off ? 'drop-shadow(0 1px 1.5px rgba(0,0,0,.22))' : 'drop-shadow(0 1px 1.2px rgba(60,40,0,.28))',
         overflow: 'visible',
         flex: 'none',
       }}
     >
       <path
         d="M12 1.8l3.1 6.6 7.2.9-5.3 5 1.4 7.1L12 17.9l-6.4 3.5 1.4-7.1-5.3-5 7.2-.9z"
-        fill="#ffcf33"
+        fill={off ? '#d9d4ca' : '#ffcf33'}
         stroke="#fff"
         strokeWidth={border * (24 / size)}
         strokeLinejoin="round"

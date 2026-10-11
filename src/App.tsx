@@ -91,7 +91,7 @@ export function App() {
             >
               <Sticky color={note.color} style={{ padding: 22 }}>
                 <div className="from">A note from you</div>
-                <div className="note-text" style={{ fontSize: 22 }}>
+                <div className="note-text" style={{ fontSize: 20 }}>
                   {note.text}
                 </div>
               </Sticky>

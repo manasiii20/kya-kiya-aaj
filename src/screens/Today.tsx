@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion'
-import { ArrowRight, CalendarDays, Check, CheckCheck, GripVertical, LayoutGrid, List, RotateCcw, Trash2, X } from 'lucide-react'
+import { AlignLeft, ArrowRight, CalendarDays, Check, CheckCheck, GripVertical, LayoutGrid, List, RotateCcw, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Sheet } from '../components/Sheet'
@@ -384,7 +384,8 @@ function NoteCard({
         >
           <Check16 on={!!task.done} />
         </button>
-        <span style={{ position: 'absolute', top: 14, right: 12, pointerEvents: 'none' }}>
+        <span style={{ position: 'absolute', top: 14, right: 12, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+          {task.description && <AlignLeft size={14} style={{ opacity: 0.4 }} aria-label="has details" />}
           <Stars n={task.priority} />
         </span>
         <div className="note-text" style={{ position: 'relative', pointerEvents: 'none' }}>
@@ -429,6 +430,7 @@ function ListRow({
       <div className="title" {...handlers}>
         {task.title}
       </div>
+      {task.description && <AlignLeft size={14} style={{ opacity: 0.35, flex: 'none' }} aria-label="has details" />}
       <Stars n={task.priority} size={16} />
       <span className="swatch" style={{ background: task.color }} />
       {draggable ? (

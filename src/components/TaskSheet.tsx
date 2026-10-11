@@ -12,24 +12,27 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
   const [title, setTitle] = useState('')
   const [color, setColor] = useState(STICKY_COLORS[0])
   const [priority, setPriority] = useState<0 | 1 | 2 | 3>(0)
+  const [description, setDescription] = useState('')
 
   useEffect(() => {
     if (!open) return
     setTitle(task?.title ?? '')
     setColor(task?.color ?? randomColor())
     setPriority(task?.priority ?? 0)
+    setDescription(task?.description ?? '')
   }, [open, task])
 
   async function confirm() {
     const text = title.trim()
     if (!text) return
+    const details = description.trim()
     if (task) {
-      await patch('tasks', task.id, { title: text, color, priority })
+      await patch('tasks', task.id, { title: text, color, priority, description: details || undefined })
     } else {
       const day = todayKey()
       const sameDay = await db.tasks.where('date').equals(day).toArray()
       const order = sameDay.length ? Math.max(...sameDay.map((t) => t.order)) + 1 : 0
-      await put('tasks', { id: uid(), title: text, date: day, done: 0, order, color, priority, deleted: 0 })
+      await put('tasks', { id: uid(), title: text, date: day, done: 0, order, color, priority, description: details || undefined, deleted: 0 })
     }
     onClose()
   }
@@ -74,6 +77,19 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
           </div>
         </div>
       </div>
+
+      <label className="describe">
+        <span className="describe-label">
+          Describe it, if you want to <em>optional</em>
+        </span>
+        <textarea
+          rows={3}
+          placeholder="Details, links, the first tiny step, a pep talk for later..."
+          value={description}
+          maxLength={1000}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </label>
 
       {task && (
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>

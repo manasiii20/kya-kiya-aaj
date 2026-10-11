@@ -387,7 +387,7 @@ textarea {
 }
 
 .note-card .note-text {
-  font-size: 15px;
+  font-size: 13px;
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
@@ -625,13 +625,55 @@ textarea {
   outline: none;
   resize: none;
   font-family: var(--font-note);
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1.35;
   color: #2b2822;
 }
 
 .write-note textarea::placeholder {
   color: rgba(43, 40, 34, 0.42);
+}
+
+.describe {
+  display: block;
+  margin-top: 12px;
+  padding: 14px 16px 10px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.describe:focus-within {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.describe-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.describe-label em {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.describe textarea {
+  width: 100%;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: none;
+  padding: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.describe textarea::placeholder {
+  color: var(--ink-faint);
 }
 
 .date-input {
@@ -822,7 +864,7 @@ textarea {
   flex: 1;
   display: flex;
   align-items: flex-end;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.3;
 }
 
@@ -979,10 +1021,19 @@ textarea {
 
 /* ---------- wall ---------- */
 
+.cal-panel {
+  border-radius: 22px;
+  padding: 14px;
+  background-color: var(--surface);
+  background-image: radial-gradient(#ecebe6 1px, transparent 1.2px);
+  background-size: 16px 16px;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+  gap: 4px;
 }
 
 .cal-dow {
@@ -990,22 +1041,17 @@ textarea {
   font-size: 12px;
   font-weight: 600;
   color: var(--ink-faint);
-  padding-bottom: 4px;
+  padding-bottom: 6px;
 }
 
 .cal-day {
   position: relative;
-  aspect-ratio: 0.8;
+  aspect-ratio: 0.72;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.65);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 5px;
-}
-
-.cal-day.today {
-  box-shadow: inset 0 0 0 2px var(--accent);
+  padding: 4px 0 6px;
 }
 
 .cal-day.future {
@@ -1016,8 +1062,23 @@ textarea {
   font-size: 12px;
   font-weight: 600;
   color: var(--ink-soft);
-  align-self: flex-start;
-  padding-left: 7px;
+  min-width: 22px;
+  height: 22px;
+  line-height: 22px;
+  border-radius: 11px;
+  text-align: center;
+}
+
+.cal-day.today .n {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cal-empty {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--line);
 }
 
 .cal-day .more {

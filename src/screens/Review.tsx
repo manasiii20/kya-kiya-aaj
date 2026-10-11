@@ -1,8 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { animate, AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Check, ChevronLeft, RotateCcw, X } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Stars, Sticky, StickyStack } from '../components/Sticky'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Stars, Sticky, StickyStack, tilt } from '../components/Sticky'
 import { shower, swipeBurst } from '../lib/celebrate'
 import { cap, todayKey } from '../lib/dates'
 import { db, patch, put, type Question, type Task } from '../lib/db'
@@ -242,13 +242,13 @@ function Done({ day, onAgain, onBack }: { day: string; onAgain: () => void; onBa
   return (
     <div style={{ textAlign: 'center' }}>
       <div className="swipe-panel">
-        <StickyStack items={stack} size={150} max={10} showText />
+        {stack.length === 0 ? <StickyStack items={[]} size={150} /> : <Scatter items={stack} />}
       </div>
       <p style={{ fontSize: 20, fontWeight: 650, letterSpacing: '-0.01em', margin: '20px 0 6px' }}>
         {stack.length === 0 ? 'A quiet day. That is allowed.' : `${stack.length} thing${stack.length === 1 ? '' : 's'} done today.`}
       </p>
       <p className="muted" style={{ fontSize: 15, margin: 0 }}>
-        {stack.length === 0 ? 'Tomorrow is a fresh pile.' : 'Look at that pile. You made that.'}
+        {stack.length === 0 ? 'Tomorrow is a fresh pile.' : 'You made all of that. Move them around if you like.'}
       </p>
       {yes && yes.length > 0 && (
         <div className="tags" style={{ justifyContent: 'center', marginTop: 16 }}>
@@ -265,6 +265,61 @@ function Done({ day, onAgain, onBack }: { day: string; onAgain: () => void; onBa
           Back to my list
         </button>
       </div>
+    </div>
+  )
+}
+
+// The day's done notes spread across the dotted board. Each one can be dragged anywhere
+// inside it; whatever you touch comes to the front. Positions are just for fun, not saved.
+function Scatter({ items }: { items: Task[] }) {
+  const board = useRef<HTMLDivElement>(null)
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null)
+  const [front, setFront] = useState<Record<string, number>>({})
+  const z = useRef(items.length)
+
+  useLayoutEffect(() => {
+    const el = board.current
+    if (el) setBox({ w: el.clientWidth, h: el.clientHeight })
+  }, [])
+
+  const size = items.length > 9 ? 82 : items.length > 4 ? 98 : 116
+
+  return (
+    <div ref={board} style={{ position: 'absolute', inset: 10 }}>
+      {box &&
+        items.map((t, i) => {
+          // Loose grid across the whole board, each note nudged off its spot so it looks tossed.
+          const cols = Math.max(2, Math.floor(box.w / (size * 1.05)))
+          const rows = Math.max(1, Math.ceil(items.length / cols))
+          const stepX = cols > 1 ? (box.w - size) / (cols - 1) : 0
+          const stepY = rows > 1 ? (box.h - size) / (rows - 1) : 0
+          const jitter = size * 0.18
+          const clampX = (v: number) => Math.min(Math.max(v, 0), box.w - size)
+          const clampY = (v: number) => Math.min(Math.max(v, 0), box.h - size)
+          const left = clampX((i % cols) * stepX + tilt(t.id + 'sx', jitter))
+          const top = clampY((rows === 1 ? (box.h - size) / 2 : Math.floor(i / cols) * stepY) + tilt(t.id + 'sy', jitter))
+          return (
+            <motion.div
+              key={t.id}
+              drag
+              dragConstraints={board}
+              dragElastic={0.12}
+              dragMomentum={false}
+              onPointerDown={() => setFront((f) => ({ ...f, [t.id]: ++z.current }))}
+              initial={{ left: box.w / 2 - size / 2, top: box.h / 2 - size / 2, scale: 0.6, opacity: 0, rotate: 0 }}
+              animate={{ left, top, scale: 1, opacity: 1, rotate: tilt(t.id, 7) }}
+              whileDrag={{ scale: 1.08, rotate: 0, boxShadow: '0 16px 30px rgba(40,30,0,.22)' }}
+              transition={{ type: 'spring', stiffness: 220, damping: 22, delay: i * 0.05 }}
+              style={{ position: 'absolute', width: size, height: size, zIndex: front[t.id] ?? i, touchAction: 'none', cursor: 'grab' }}
+            >
+              <Sticky color={t.color} size={size} style={{ padding: 10, overflow: 'hidden' }}>
+                <div className="note-text" style={{ fontSize: 12, pointerEvents: 'none' }}>
+                  {t.title}
+                </div>
+              </Sticky>
+            </motion.div>
+          )
+        })}
     </div>
   )
 }

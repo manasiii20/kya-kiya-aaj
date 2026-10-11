@@ -39,6 +39,9 @@ export function Calendar({ onBack }: { onBack: () => void }) {
     ...Array.from({ length: days }, (_, i) => toKey(new Date(cursor.getFullYear(), cursor.getMonth(), i + 1))),
   ]
   const isCurrentMonth = first.slice(0, 7) === today.slice(0, 7)
+  // Pile size follows the cell width so it fills the day nicely on any phone.
+  const cell = (Math.min(window.innerWidth, 520) - 44 - 28 - 6 * 4) / 7
+  const pile = Math.round(Math.max(24, Math.min(44, cell * 0.76)))
 
   return (
     <div className="app">
@@ -67,6 +70,7 @@ export function Calendar({ onBack }: { onBack: () => void }) {
         </button>
       </div>
 
+      <div className="cal-panel">
       <div className="cal-grid">
         {DOW.map((d, i) => (
           <div key={i} className="cal-dow">
@@ -86,13 +90,15 @@ export function Calendar({ onBack }: { onBack: () => void }) {
               onClick={() => setOpen(key)}
             >
               <span className="n">{fromKey(key).getDate()}</span>
-              <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                {items.length > 0 && <StickyStack items={items} size={26} max={6} />}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {items.length > 0 ? <StickyStack items={items} size={pile} max={6} /> : !future && <span className="cal-empty" />}
               </div>
               {items.length > 6 && <span className="more">{items.length}</span>}
             </motion.button>
           )
         })}
+      </div>
+
       </div>
 
       <div className="month-total">
@@ -153,7 +159,7 @@ function DaySheet({
                   animate={{ opacity: 1, y: 0, rotate: tilt(t.id, 0.8) }}
                   transition={{ delay: i * 0.04, type: 'spring', stiffness: 300, damping: 26 }}
                 >
-                  <Sticky color={t.color} text={t.title} fontSize={15} />
+                  <Sticky color={t.color} text={t.title} fontSize={13} />
                 </motion.div>
               ))}
             </div>
