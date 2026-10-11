@@ -772,6 +772,157 @@ textarea {
   font-weight: 650;
 }
 
+/* ---------- swipe your list ---------- */
+
+.swipe-panel {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(300px, calc(100dvh - var(--safe-top) - var(--safe-bottom) - 330px), 420px);
+  border-radius: 22px;
+  padding: 24px 16px;
+  background-color: var(--surface);
+  background-image: radial-gradient(#e9e7e2 1px, transparent 1.2px);
+  background-size: 16px 16px;
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+}
+
+.swipe-slot {
+  grid-area: 1 / 1;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.swipe-card {
+  width: min(62vw, 240px);
+  aspect-ratio: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.swipe-card.question {
+  background-image: none;
+}
+
+.swipe-pos {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.38);
+  min-height: 15px;
+}
+
+.swipe-text {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.swipe-ask {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.swipe-slot .verdict {
+  top: 34px;
+  font-size: 15px;
+  padding: 4px 9px;
+  border-width: 2px;
+}
+
+.swipe-slot .verdict.yes {
+  left: 12px;
+}
+
+.swipe-slot .verdict.no {
+  right: 12px;
+}
+
+.help-pop {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: min(340px, calc(100% - 40px));
+  background: var(--surface);
+  border-radius: 26px;
+  padding: 24px;
+  z-index: 50;
+  box-shadow: var(--shadow-card);
+}
+
+.help-pop h2 {
+  font-size: 19px;
+  font-weight: 650;
+  margin: 0 0 16px;
+}
+
+.help-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.help-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.help-icon.yes {
+  background: #e3f5ea;
+  color: var(--yes);
+}
+
+.help-icon.no {
+  background: #fde8e4;
+  color: var(--no);
+}
+
+.swipe-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  padding: 0 20px 0 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: var(--shadow-card);
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.swipe-btn .ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #ffe08a;
+  color: var(--ink);
+}
+
+.checklist-no {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
 /* ---------- wall ---------- */
 
 .cal-grid {

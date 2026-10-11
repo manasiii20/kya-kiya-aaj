@@ -36,7 +36,7 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
         <button className="icon-btn plain" aria-label="close" onClick={onClose}>
           <X size={20} />
         </button>
-        <h2>{task ? 'edit task' : 'add for today'}</h2>
+        <h2>{task ? 'Edit task' : 'Add for today'}</h2>
         <span />
       </div>
 
@@ -64,7 +64,7 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
             }}
           >
             {task.done ? <RotateCcw size={17} /> : <Check size={17} />}
-            {task.done ? 'not done' : 'mark done'}
+            {task.done ? 'Not done' : 'Mark done'}
           </button>
           <button
             className="btn"
@@ -74,13 +74,13 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
               onClose()
             }}
           >
-            <Trash2 size={17} /> delete
+            <Trash2 size={17} /> Delete
           </button>
         </div>
       )}
 
       <button className="btn primary block" style={{ marginTop: 12 }} disabled={!title.trim()} onClick={confirm}>
-        {task ? 'save' : 'add it'}
+        {task ? 'Save' : 'Add it'}
       </button>
     </Sheet>
   )

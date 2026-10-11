@@ -27,14 +27,32 @@ export function pop(el?: Element | null) {
     shapes: ['square', 'circle'],
     colors: COLORS,
     origin: originOf(el),
-    disableForReducedMotion: true,
+    zIndex: 200,
+  })
+}
+
+// A proper burst for a right swipe, aimed up and to the right where the card flies off.
+export function swipeBurst(el?: Element | null) {
+  buzz(15)
+  const origin = originOf(el)
+  void confetti({
+    particleCount: 70,
+    angle: 70,
+    spread: 80,
+    startVelocity: 38,
+    gravity: 1,
+    ticks: 140,
+    scalar: 0.9,
+    colors: COLORS,
+    origin,
+    zIndex: 200,
   })
 }
 
 // Bigger moment, e.g. finishing a review.
 export function shower() {
   buzz([10, 40, 10])
-  const base = { spread: 80, startVelocity: 38, ticks: 160, scalar: 0.9, colors: COLORS, disableForReducedMotion: true }
+  const base = { spread: 80, startVelocity: 38, ticks: 160, scalar: 0.9, colors: COLORS, zIndex: 200 }
   void confetti({ ...base, particleCount: 70, angle: 60, origin: { x: 0, y: 0.75 } })
   void confetti({ ...base, particleCount: 70, angle: 120, origin: { x: 1, y: 0.75 } })
 }

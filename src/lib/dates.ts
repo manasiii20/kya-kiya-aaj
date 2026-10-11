@@ -35,3 +35,21 @@ export function stampDay(key: string): string {
     .toLocaleDateString(undefined, { weekday: 'long', day: '2-digit', month: '2-digit' })
     .toLowerCase()
 }
+
+export function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+export function ordinal(n: number): string {
+  const t = n % 100
+  if (t >= 11 && t <= 13) return `${n}th`
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`
+}
+
+// Nobody counts their checklists, so each day gets a random-looking number of its own.
+// Seeded by the date, so it stays the same all day and changes tomorrow.
+export function checklistNumber(key: string): number {
+  let h = 2166136261
+  for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 16777619)
+  return 100 + (Math.abs(h) % 900)
+}

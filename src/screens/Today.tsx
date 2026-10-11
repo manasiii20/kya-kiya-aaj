@@ -7,7 +7,7 @@ import { Sheet } from '../components/Sheet'
 import { stackPad, Sticky, StickyStack, tilt } from '../components/Sticky'
 import { TaskSheet } from '../components/TaskSheet'
 import { pop } from '../lib/celebrate'
-import { addDays, prettyDay, todayKey } from '../lib/dates'
+import { addDays, cap, checklistNumber, ordinal, prettyDay, todayKey } from '../lib/dates'
 import { db, patch, patchMany, type Task } from '../lib/db'
 import { noteAfterTick } from '../lib/selfNotes'
 
@@ -60,12 +60,10 @@ function useLongPress(onTap: () => void, onHold: () => void) {
 
 export function Today({
   day,
-  setDay,
   onWall,
   dockSlot,
 }: {
   day: string
-  setDay: (d: string) => void
   onWall: () => void
   dockSlot: HTMLElement | null
 }) {
@@ -181,14 +179,13 @@ export function Today({
 
   const shownOpen = view === 'list' ? ordered : open
   const shownDone = finished
-  const yesterday = addDays(today, -1)
   const total = live.length
   const doneCount = finished.length
 
   return (
     <>
       <header className="screen-head">
-        <h1>notesee</h1>
+        <h1>Notesee</h1>
         <div className="head-actions">
           {selecting ? (
             <button className="icon-btn" aria-label="stop selecting" onClick={endSelect}>
@@ -214,13 +211,13 @@ export function Today({
           <div className="line">
             {doneCount === 0
               ? total
-                ? 'nothing yet. start with the tiniest one.'
-                : 'a blank page. add one small thing.'
+                ? 'Nothing yet. Start with the tiniest one.'
+                : 'A blank page. Add one small thing.'
               : doneCount >= total
-                ? 'all done. look at that pile.'
+                ? 'All done. Look at that pile.'
                 : doneCount === 1
-                  ? 'one done. that counts.'
-                  : 'done so far. keep stacking.'}
+                  ? 'One done. That counts.'
+                  : 'Done so far. Keep stacking.'}
           </div>
         </div>
       </div>
@@ -228,19 +225,13 @@ export function Today({
       {day === today && leftovers.length > 0 && !selecting && (
         <button className="banner" onClick={() => setLeftoverOpen(true)}>
           <RotateCcw size={16} />
-          <span style={{ flex: 1 }}>{leftovers.length} unfinished from before. bring any here?</span>
+          <span style={{ flex: 1 }}>{leftovers.length} unfinished from before. Bring any here?</span>
           <ArrowRight size={16} />
         </button>
       )}
 
       <div className="toolbar">
-        <div className="segmented" aria-label="day">
-          {[yesterday, today].map((d) => (
-            <button key={d} className={day === d ? 'on' : ''} onClick={() => setDay(d)}>
-              {prettyDay(d)}
-            </button>
-          ))}
-        </div>
+        <span className="checklist-no">Your {ordinal(checklistNumber(day))} checklist</span>
         {total > 0 && (
           <div className="segmented" aria-label="view">
             <button className={view === 'notes' ? 'on' : ''} aria-label="notes view" onClick={() => changeView('notes')}>
@@ -255,7 +246,7 @@ export function Today({
 
       {shownOpen.length + shownDone.length === 0 ? (
         <div className="empty">
-          {day === today ? 'what would make today feel okay?\ntap + to add it.' : 'nothing written down yesterday.\nthat is okay too.'}
+          {'What would make today feel okay?\nTap + to add it.'}
         </div>
       ) : view === 'notes' ? (
         <ul className="note-grid">
@@ -311,7 +302,7 @@ export function Today({
         createPortal(
           <div className="bulkbar">
             <button className="btn" disabled={!selected.size} onClick={() => bulk('done')}>
-              <CheckCheck size={18} /> done
+              <CheckCheck size={18} /> Done
             </button>
             <button
               className="btn"
@@ -486,11 +477,11 @@ function LeftoverSheet({ open, tasks, day, onClose }: { open: boolean; tasks: Ta
         <button className="icon-btn plain" aria-label="close" onClick={onClose}>
           <X size={20} />
         </button>
-        <h2>left over from before</h2>
+        <h2>Left over from before</h2>
         <span />
       </div>
       <p className="muted" style={{ margin: '-6px 0 14px', fontSize: 14, textAlign: 'center' }}>
-        pick what still matters. the rest can go. no guilt.
+        Pick what still matters. The rest can go. No guilt.
       </p>
       <div className="card-list" style={{ marginBottom: 14 }}>
         {tasks.map((t) => (
@@ -511,7 +502,7 @@ function LeftoverSheet({ open, tasks, day, onClose }: { open: boolean; tasks: Ta
             <span className="grow">
               {t.title}
               <div className="muted" style={{ fontSize: 12 }}>
-                {prettyDay(t.date)}
+                {cap(prettyDay(t.date))}
               </div>
             </span>
           </button>
@@ -526,10 +517,10 @@ function LeftoverSheet({ open, tasks, day, onClose }: { open: boolean; tasks: Ta
             onClose()
           }}
         >
-          let all go
+          Let all go
         </button>
         <button className="btn primary" style={{ flex: 1.4 }} onClick={bring} disabled={!picked.size}>
-          bring {picked.size || ''} to today
+          Bring {picked.size || ''} to today
         </button>
       </div>
     </Sheet>

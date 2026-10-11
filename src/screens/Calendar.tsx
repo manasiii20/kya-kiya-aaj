@@ -1,15 +1,15 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Layers } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Sheet } from '../components/Sheet'
 import { Sticky, StickyStack, tilt } from '../components/Sticky'
-import { fromKey, prettyDay, toKey, todayKey } from '../lib/dates'
+import { cap, fromKey, prettyDay, toKey, todayKey } from '../lib/dates'
 import { db, type Task } from '../lib/db'
 
-const DOW = ['m', 't', 'w', 't', 'f', 's', 's']
+const DOW = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
-export function Calendar({ onBack, onReview }: { onBack: () => void; onReview: (day: string) => void }) {
+export function Calendar({ onBack }: { onBack: () => void }) {
   const today = todayKey()
   const [cursor, setCursor] = useState(() => {
     const d = new Date()
@@ -47,7 +47,7 @@ export function Calendar({ onBack, onReview }: { onBack: () => void; onReview: (
           <ChevronLeft size={20} />
         </button>
         <h1>
-          the wall <span className="soft">of piles</span>
+          The wall <span className="soft">of piles</span>
         </h1>
       </header>
 
@@ -55,7 +55,7 @@ export function Calendar({ onBack, onReview }: { onBack: () => void; onReview: (
         <button className="icon-btn" aria-label="previous month" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}>
           <ChevronLeft size={18} />
         </button>
-        <span>{cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }).toLowerCase()}</span>
+        <span>{cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
         <button
           className="icon-btn"
           aria-label="next month"
@@ -97,7 +97,7 @@ export function Calendar({ onBack, onReview }: { onBack: () => void; onReview: (
 
       <div className="month-total">
         {done.length === 0 ? (
-          'no piles this month yet. they start with one sticky.'
+          'No piles this month yet. They start with one sticky.'
         ) : (
           <>
             <b>{done.length}</b> things done across <b>{byDay.size}</b> day{byDay.size === 1 ? '' : 's'} this month.
@@ -105,7 +105,7 @@ export function Calendar({ onBack, onReview }: { onBack: () => void; onReview: (
         )}
       </div>
 
-      <DaySheet day={open} items={open ? byDay.get(open) ?? [] : []} onClose={() => setOpen(null)} onReview={onReview} />
+      <DaySheet day={open} items={open ? byDay.get(open) ?? [] : []} onClose={() => setOpen(null)} />
     </div>
   )
 }
@@ -114,12 +114,10 @@ function DaySheet({
   day,
   items,
   onClose,
-  onReview,
 }: {
   day: string | null
   items: Task[]
   onClose: () => void
-  onReview: (day: string) => void
 }) {
   const answers = useLiveQuery(
     async () => {
@@ -138,13 +136,13 @@ function DaySheet({
           <div className="sheet-head">
             <span />
             <h2>
-              {prettyDay(day)}, {items.length} done
+              {cap(prettyDay(day))}, {items.length} done
             </h2>
             <span />
           </div>
           {items.length === 0 ? (
             <p className="empty" style={{ paddingTop: 8 }}>
-              nothing stacked this day. rest days count too.
+              Nothing stacked this day. Rest days count too.
             </p>
           ) : (
             <div className="fan">
@@ -162,24 +160,15 @@ function DaySheet({
           )}
           {answers && answers.length > 0 && (
             <>
-              <div className="section-label">also</div>
+              <div className="section-label">Also</div>
               <div className="tags">
                 {answers.map((q) => (
-                  <span key={q.id}>{q.text.replace(/\?$/, '')}</span>
+                  <span key={q.id}>{cap(q.text.replace(/\?$/, ''))}</span>
                 ))}
               </div>
             </>
           )}
-          <button
-            className="btn block"
-            style={{ marginTop: 20 }}
-            onClick={() => {
-              onClose()
-              onReview(day)
-            }}
-          >
-            <Layers size={16} /> review this day
-          </button>
+          <div style={{ height: 8 }} />
         </>
       )}
     </Sheet>
