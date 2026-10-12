@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { PartyPopper, Plus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Sticky } from './components/Sticky'
 import { TaskSheet } from './components/TaskSheet'
@@ -49,9 +49,7 @@ export function App() {
       <div className="dock" style={{ bottom: 'calc(var(--dock-bottom) + 70px)' }} ref={setSlot} />
       <div className="dock">
         <motion.button className="swipe-btn" whileTap={{ scale: 0.95 }} onClick={() => setScreen('swipe')}>
-          <span className="ico">
-            <PartyPopper size={18} />
-          </span>
+          <SwipeIcon />
           Swipe your list
         </motion.button>
         <motion.button className="fab" aria-label="add a task" whileTap={{ scale: 0.9 }} onClick={() => setAdding(true)}>
@@ -103,5 +101,21 @@ export function App() {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+// A tiny fanned hand of stickies, like cards about to be swiped.
+function SwipeIcon() {
+  const note = (fill: string, rotate: number, x: number) => (
+    <rect x={10 + x} y="9" width="14" height="14" rx="2" fill={fill} transform={`rotate(${rotate} ${17 + x} 24)`} />
+  )
+  return (
+    <svg className="ico" width="34" height="34" viewBox="0 0 34 34" aria-hidden>
+      <g style={{ filter: 'drop-shadow(0 1px 1px rgba(40,30,0,.22))' }}>
+        {note('#b9d7ff', -26, -2)}
+        {note('#ffc6c2', 24, 2)}
+        {note('#ffe08a', -1, 0)}
+      </g>
+    </svg>
   )
 }
