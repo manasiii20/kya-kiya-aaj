@@ -11,10 +11,13 @@ type Card = { kind: 'task'; task: Task } | { kind: 'question'; q: Question }
 
 const HELP_SEEN = 'kka:swipeHelpSeen'
 
+// How many silly questions sneak into each deck; a different few each time.
+const QUESTIONS_PER_DECK = 2
+
 // Spread the fun questions between the tasks so the deck keeps surprising you.
 function buildDeck(tasks: Task[], questions: Question[]): Card[] {
   const deck: Card[] = tasks.map((task) => ({ kind: 'task', task }))
-  const qs = [...questions].sort(() => Math.random() - 0.5)
+  const qs = [...questions].sort(() => Math.random() - 0.5).slice(0, QUESTIONS_PER_DECK)
   qs.forEach((q, i) => {
     const at = Math.round(((i + 1) * deck.length) / (qs.length + 1)) + i
     deck.splice(Math.min(at, deck.length), 0, { kind: 'question', q })
