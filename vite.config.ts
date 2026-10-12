@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['apple-touch-icon.png'],
+      includeAssets: ['apple-touch-icon.png', 'favicon-32.png', 'favicon-64.png'],
       manifest: {
         name: 'notesee',
         short_name: 'notesee',
