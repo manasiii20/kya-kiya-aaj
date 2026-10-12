@@ -1004,8 +1004,31 @@ textarea {
 }
 
 .swipe-btn .ico {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #ffe08a;
+  color: var(--ink);
   flex: none;
-  overflow: visible;
+}
+
+/* every few seconds the hand gives a little left-right swipe */
+.swipe-btn .ico svg {
+  transform-origin: 50% 85%;
+  animation: swipe-wave 4.5s ease-in-out infinite;
+}
+
+@keyframes swipe-wave {
+  0%, 70%, 100% { transform: translateX(0) rotate(0); }
+  76% { transform: translateX(-3px) rotate(-14deg); }
+  84% { transform: translateX(3px) rotate(14deg); }
+  92% { transform: translateX(-1px) rotate(-4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-btn .ico svg { animation: none; }
 }
 
 .checklist-no {
