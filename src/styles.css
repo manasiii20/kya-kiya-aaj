@@ -1267,6 +1267,145 @@ textarea {
   }
 }
 
+/* ---------- laptop and desktop ---------- */
+
+@media (hover: hover) {
+  .note-card,
+  .task,
+  .btn,
+  .icon-btn,
+  .chip,
+  .swipe-btn,
+  .fab,
+  .cal-day {
+    transition: box-shadow 0.18s, filter 0.18s, background 0.18s;
+  }
+
+  .note-card:hover {
+    filter: brightness(1.02);
+    box-shadow:
+      0 0.5px 0 rgba(0, 0, 0, 0.06),
+      0 2px 4px rgba(0, 0, 0, 0.06),
+      0 16px 22px -12px rgba(40, 30, 0, 0.32);
+  }
+
+  .task:hover {
+    background: #fdfcfa;
+  }
+
+  .btn:hover,
+  .icon-btn:hover,
+  .chip:hover,
+  .swipe-btn:hover {
+    filter: brightness(0.97);
+  }
+
+  .fab:hover {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+  }
+
+  .cal-day:not(:disabled):hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --gutter: 32px;
+    --note-size: 210px;
+    --side: 320px;
+    --app-max: 1180px;
+  }
+
+  .app {
+    max-width: var(--app-max);
+    padding-top: calc(var(--safe-top) + 32px);
+    padding-bottom: 48px;
+  }
+
+  /* Today: the pile and buttons in a column on the left, the wall of notes on the right */
+  .today-layout {
+    display: grid;
+    grid-template-columns: var(--side) minmax(0, 1fr);
+    gap: 48px;
+    align-items: start;
+  }
+
+  .today-side {
+    position: sticky;
+    top: 32px;
+  }
+
+  .today-side .pile {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 22px;
+    padding: 24px;
+  }
+
+  .today-side .pile .count {
+    font-size: 36px;
+  }
+
+  .today-main .toolbar {
+    min-height: 42px;
+    margin: 4px 0 20px;
+  }
+
+  .note-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+  }
+
+  .note-card .note-text {
+    font-size: 14px;
+  }
+
+  .task-list {
+    max-width: 720px;
+  }
+
+  /* the buttons that float at the bottom on phones sit under the pile instead */
+  .dock {
+    left: max(var(--gutter), calc(50% - var(--app-max) / 2 + var(--gutter)));
+    transform: none;
+    width: var(--side);
+    padding: 0;
+    bottom: 32px;
+  }
+
+  /* sheets become centred cards instead of sliding up from the edge */
+  .sheet {
+    bottom: auto;
+    top: 4vh;
+    width: 500px;
+    max-height: 92vh;
+    border-radius: 28px;
+    padding-bottom: 24px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+  }
+
+  .overlay .app {
+    max-width: 560px;
+  }
+
+  .overlay .app.wall {
+    max-width: 780px;
+  }
+
+  .cal-grid {
+    gap: 8px;
+  }
+
+  .cal-day .n {
+    font-size: 13px;
+  }
+
+  .help-pop {
+    width: 380px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

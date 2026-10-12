@@ -159,6 +159,17 @@ function Deck({ card, next, pos, onAnswer }: { card: Card; next?: Card; pos: str
   const cardRef = useRef<HTMLDivElement>(null)
   const done = useRef(false)
 
+  // Arrow keys swipe on a laptop.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (document.querySelector('.help-pop')) return
+      if (e.key === 'ArrowRight') fling(true)
+      if (e.key === 'ArrowLeft') fling(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
+
   function fling(yes: boolean) {
     if (done.current) return
     done.current = true

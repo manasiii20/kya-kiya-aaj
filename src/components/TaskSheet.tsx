@@ -39,6 +39,15 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
 
   return (
     <Sheet open={open} onClose={onClose}>
+      <div
+        onKeyDown={(e) => {
+          // Cmd/Ctrl + Enter saves from anywhere in the sheet.
+          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault()
+            void confirm()
+          }
+        }}
+      >
       <div className="sheet-head">
         <button className="icon-btn plain" aria-label="close" onClick={onClose}>
           <X size={20} />
@@ -120,6 +129,7 @@ export function TaskSheet({ open, task, onClose }: { open: boolean; task?: Task 
       <button className="btn primary block" style={{ marginTop: 12 }} disabled={!title.trim()} onClick={confirm}>
         {task ? 'Save' : 'Add it'}
       </button>
+      </div>
     </Sheet>
   )
 }

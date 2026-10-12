@@ -15,6 +15,20 @@ type View = 'notes' | 'list'
 type Flyer = { id: string; color: string; from: DOMRect; toLeft: number; toTop: number }
 
 const PILE = 76
+const PILE_WIDE = 128
+
+// True on laptop-sized screens, where Today becomes a sidebar + wall of notes.
+export function useWide() {
+  const q = '(min-width: 900px)'
+  const [wide, setWide] = useState(() => window.matchMedia(q).matches)
+  useEffect(() => {
+    const m = window.matchMedia(q)
+    const on = () => setWide(m.matches)
+    m.addEventListener('change', on)
+    return () => m.removeEventListener('change', on)
+  }, [])
+  return wide
+}
 
 function loadView(): View {
   try {
@@ -68,6 +82,8 @@ export function Today({
   dockSlot: HTMLElement | null
 }) {
   const today = todayKey()
+  const wide = useWide()
+  const pileSize = wide ? PILE_WIDE : PILE
   const tasks = useLiveQuery(() => db.tasks.where('date').equals(day).toArray(), [day]) ?? []
   const leftovers =
     useLiveQuery(
@@ -115,8 +131,8 @@ export function Today({
         id: t.id,
         color: t.color,
         from: from.getBoundingClientRect(),
-        toLeft: to.left + stackPad(PILE),
-        toTop: to.bottom - PILE - layers * Math.max(1.5, PILE * 0.03),
+        toLeft: to.left + stackPad(pileSize),
+        toTop: to.bottom - pileSize - layers * Math.max(1.5, pileSize * 0.03),
       }
       setFlyers((f) => [...f, flyer])
       window.setTimeout(() => setFlyers((f) => f.filter((x) => x !== flyer)), 1100)
@@ -184,6 +200,8 @@ export function Today({
 
   return (
     <>
+      <div className="today-layout">
+      <aside className="today-side">
       <header className="screen-head">
         <h1>notesee</h1>
         <div className="head-actions">
@@ -201,7 +219,7 @@ export function Today({
 
       <div className="pile">
         <div ref={pileRef}>
-          <StickyStack items={pileItems} size={PILE} />
+          <StickyStack items={pileItems} size={pileSize} />
         </div>
         <div>
           <div className="count">
@@ -229,7 +247,9 @@ export function Today({
           <ArrowRight size={16} />
         </button>
       )}
+      </aside>
 
+      <section className="today-main">
       <div className="toolbar">
         <span className="checklist-no">Checklist number {checklistNumber(day)}</span>
         {total > 0 && (
@@ -246,7 +266,7 @@ export function Today({
 
       {shownOpen.length + shownDone.length === 0 ? (
         <div className="empty">
-          {'What would make today feel okay?\nTap + to add it.'}
+          {wide ? 'What would make today feel okay?\nPress N or click + to add it.' : 'What would make today feel okay?\nTap + to add it.'}
         </div>
       ) : view === 'notes' ? (
         <ul className="note-grid">
@@ -297,6 +317,9 @@ export function Today({
         </>
       )}
 
+      </section>
+      </div>
+
       {dockSlot &&
         selecting &&
         createPortal(
@@ -322,7 +345,7 @@ export function Today({
           key={f.id}
           className="fly"
           initial={{ left: f.from.left, top: f.from.top, width: f.from.width, height: f.from.height, rotate: 0 }}
-          animate={{ left: f.toLeft, top: f.toTop, width: PILE, height: PILE, rotate: tilt(f.id, 2) }}
+          animate={{ left: f.toLeft, top: f.toTop, width: pileSize, height: pileSize, rotate: tilt(f.id, 2) }}
           transition={{ duration: 0.5, ease: [0.32, 0.72, 0.3, 1] }}
           onAnimationComplete={() => setFlyers((all) => all.filter((x) => x.id !== f.id))}
         >

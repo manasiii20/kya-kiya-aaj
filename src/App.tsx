@@ -42,6 +42,24 @@ export function App() {
     }
   }, [])
 
+  // Keyboard on a laptop: N adds a task, S starts swiping. Ignored while typing.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement
+      if (e.metaKey || e.ctrlKey || e.altKey || el.closest('input, textarea, [role=dialog]')) return
+      if (adding || screen) return
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault()
+        setAdding(true)
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault()
+        setScreen('swipe')
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [adding, screen])
+
   return (
     <div className="app">
       <Today day={day} onWall={() => setScreen('wall')} dockSlot={slot} />
@@ -65,6 +83,7 @@ export function App() {
         {screen && (
           <motion.div key={screen} className="overlay" {...slideIn}>
             {screen === 'wall' ? <Calendar onBack={() => setScreen(null)} /> : <Review onBack={() => setScreen(null)} />}
+            <EscapeTo onEscape={() => setScreen(null)} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -106,3 +125,15 @@ export function App() {
   )
 }
 
+
+// Esc backs out of a full-screen view (the wall, swiping) unless a sheet is open on top.
+function EscapeTo({ onEscape }: { onEscape: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !document.querySelector('.sheet, .help-pop')) onEscape()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onEscape])
+  return null
+}

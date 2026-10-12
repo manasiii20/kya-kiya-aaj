@@ -1,8 +1,19 @@
 import { AnimatePresence, motion, useDragControls } from 'framer-motion'
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 
 export function Sheet({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
   const controls = useDragControls()
+  useEffect(() => {
+    if (!open) {
+      // Drop focus from the sheet as it slides away so shortcuts work straight after closing.
+      const el = document.activeElement as HTMLElement | null
+      if (el?.closest('.sheet')) el.blur()
+      return
+    }
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
   return (
     <AnimatePresence>
       {open && (
