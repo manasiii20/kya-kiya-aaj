@@ -1379,20 +1379,17 @@ textarea {
   }
 
   .note-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
   }
 
   .note-card {
-    padding: 12px;
+    padding: 16px;
   }
 
   .note-card .note-text {
-    font-size: 13px;
-  }
-
-  .task-list {
-    max-width: 760px;
+    font-size: 15px;
+    -webkit-line-clamp: 6;
   }
 
   .empty {
