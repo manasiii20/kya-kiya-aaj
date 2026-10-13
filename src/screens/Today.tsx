@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion'
-import { AlignLeft, ArrowRight, CalendarDays, Check, CheckCheck, GripVertical, LayoutGrid, List, RotateCcw, Trash2, X } from 'lucide-react'
+import { AlignLeft, ArrowRight, CalendarDays, Hand, Plus, Check, CheckCheck, GripVertical, LayoutGrid, List, RotateCcw, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Sheet } from '../components/Sheet'
@@ -15,7 +15,7 @@ type View = 'notes' | 'list'
 type Flyer = { id: string; color: string; from: DOMRect; toLeft: number; toTop: number }
 
 const PILE = 76
-const PILE_WIDE = 128
+const PILE_WIDE = 92
 
 // True on laptop-sized screens, where Today becomes a sidebar + wall of notes.
 export function useWide() {
@@ -75,10 +75,14 @@ function useLongPress(onTap: () => void, onHold: () => void) {
 export function Today({
   day,
   onWall,
+  onSwipe,
+  onAdd,
   dockSlot,
 }: {
   day: string
   onWall: () => void
+  onSwipe: () => void
+  onAdd: () => void
   dockSlot: HTMLElement | null
 }) {
   const today = todayKey()
@@ -246,6 +250,19 @@ export function Today({
           <span style={{ flex: 1 }}>{leftovers.length} unfinished from before. Bring any here?</span>
           <ArrowRight size={16} />
         </button>
+      )}
+      {wide && (
+        <div className="side-actions">
+          <button className="swipe-btn" onClick={onSwipe}>
+            <span className="ico">
+              <Hand size={18} strokeWidth={2.2} />
+            </span>
+            Swipe your list
+          </button>
+          <button className="btn primary add-btn" onClick={onAdd} title="Add a task (N)">
+            <Plus size={18} /> Add
+          </button>
+        </div>
       )}
       </aside>
 

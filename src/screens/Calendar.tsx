@@ -40,7 +40,7 @@ export function Calendar({ onBack }: { onBack: () => void }) {
   ]
   const isCurrentMonth = first.slice(0, 7) === today.slice(0, 7)
   // Pile size follows the cell width so it fills the day nicely on any phone.
-  const cell = (Math.min(window.innerWidth, window.innerWidth >= 900 ? 760 : 520) - 44 - 28 - 6 * 4) / 7
+  const cell = (Math.min(window.innerWidth, window.innerWidth >= 900 ? 820 : 520) - 44 - 28 - 6 * 4) / 7
   const pile = Math.round(Math.max(24, Math.min(64, cell * 0.72)))
 
   return (

@@ -62,10 +62,10 @@ export function App() {
 
   return (
     <div className="app">
-      <Today day={day} onWall={() => setScreen('wall')} dockSlot={slot} />
+      <Today day={day} onWall={() => setScreen('wall')} onSwipe={() => setScreen('swipe')} onAdd={() => setAdding(true)} dockSlot={slot} />
 
       <div className="dock" style={{ bottom: 'calc(var(--dock-bottom) + 70px)' }} ref={setSlot} />
-      <div className="dock">
+      <div className="dock dock-actions">
         <motion.button className="swipe-btn" whileTap={{ scale: 0.95 }} onClick={() => setScreen('swipe')}>
           <span className="ico">
             <Hand size={18} strokeWidth={2.2} />

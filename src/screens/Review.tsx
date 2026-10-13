@@ -302,16 +302,22 @@ function Scatter({ items }: { items: Task[] }) {
     <div ref={board} style={{ position: 'absolute', inset: 10 }}>
       {box &&
         items.map((t, i) => {
-          // Loose grid across the whole board, each note nudged off its spot so it looks tossed.
-          const cols = Math.max(2, Math.floor(box.w / (size * 1.05)))
-          const rows = Math.max(1, Math.ceil(items.length / cols))
-          const stepX = cols > 1 ? (box.w - size) / (cols - 1) : 0
-          const stepY = rows > 1 ? (box.h - size) / (rows - 1) : 0
-          const jitter = size * 0.18
+          // A loose cluster in the middle of the board: rows of slightly overlapping notes,
+          // centred as a group, each nudged and turned so it looks dropped there by hand.
+          const gap = size * 0.94
+          const cols = Math.max(1, Math.min(items.length, Math.floor((box.w - size) / gap) + 1, 4))
+          const rows = Math.ceil(items.length / cols)
+          const row = Math.floor(i / cols)
+          const inRow = row === rows - 1 ? items.length - row * cols : cols
+          const groupW = (inRow - 1) * gap + size
+          const groupH = (rows - 1) * gap + size
+          const x0 = (box.w - groupW) / 2
+          const y0 = Math.max(0, (box.h - groupH) / 2)
+          const jitter = size * 0.1
           const clampX = (v: number) => Math.min(Math.max(v, 0), box.w - size)
           const clampY = (v: number) => Math.min(Math.max(v, 0), box.h - size)
-          const left = clampX((i % cols) * stepX + tilt(t.id + 'sx', jitter))
-          const top = clampY((rows === 1 ? (box.h - size) / 2 : Math.floor(i / cols) * stepY) + tilt(t.id + 'sy', jitter))
+          const left = clampX(x0 + (i % cols) * gap + tilt(t.id + 'sx', jitter))
+          const top = clampY(y0 + row * gap + tilt(t.id + 'sy', jitter))
           return (
             <motion.div
               key={t.id}

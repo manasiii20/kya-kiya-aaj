@@ -14,7 +14,7 @@
   --no: #e0533f;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 10px 28px rgba(0, 0, 0, 0.07);
   --font-ui: 'Google Sans Flex Variable', system-ui, -apple-system, sans-serif;
-  --font-note: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+  --font-note: 'Geist Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, Menlo, monospace;
   --gutter: 20px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -1311,74 +1311,100 @@ textarea {
 
 @media (min-width: 900px) {
   :root {
-    --gutter: 32px;
-    --note-size: 210px;
-    --side: 320px;
-    --app-max: 1180px;
+    --gutter: 40px;
+    --note-size: 180px;
+    --side: 300px;
+    --app-max: 1600px;
   }
 
   .app {
     max-width: var(--app-max);
-    padding-top: calc(var(--safe-top) + 32px);
-    padding-bottom: 48px;
+    padding-top: calc(var(--safe-top) + 28px);
+    padding-bottom: 40px;
   }
 
-  /* Today: the pile and buttons in a column on the left, the wall of notes on the right */
+  /* Today: a slim column for the pile and actions, the rest of the width for notes */
   .today-layout {
     display: grid;
     grid-template-columns: var(--side) minmax(0, 1fr);
-    gap: 48px;
+    gap: 40px;
     align-items: start;
   }
 
   .today-side {
     position: sticky;
-    top: 32px;
+    top: 28px;
   }
 
   .today-side .pile {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 22px;
-    padding: 24px;
+    padding: 18px 20px;
+    gap: 16px;
   }
 
-  .today-side .pile .count {
-    font-size: 36px;
+  .side-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
   }
 
-  .today-main .toolbar {
-    min-height: 42px;
-    margin: 4px 0 20px;
+  .side-actions .swipe-btn {
+    flex: 1;
+    height: 52px;
+    box-shadow: inset 0 0 0 1px var(--line);
+    background: var(--surface);
+    backdrop-filter: none;
   }
 
-  .note-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
+  .side-actions .add-btn {
+    height: 52px;
+    border-radius: 999px;
+    padding: 0 20px;
   }
 
-  .note-card .note-text {
-    font-size: 14px;
+  /* the floating phone buttons are replaced by the ones in the column */
+  .dock-actions {
+    display: none;
   }
 
-  .task-list {
-    max-width: 720px;
-  }
-
-  /* the buttons that float at the bottom on phones sit under the pile instead */
   .dock {
     left: max(var(--gutter), calc(50% - var(--app-max) / 2 + var(--gutter)));
     transform: none;
     width: var(--side);
     padding: 0;
-    bottom: 32px;
+  }
+
+  .today-main .toolbar {
+    min-height: 42px;
+    margin: 4px 0 18px;
+  }
+
+  .note-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+  }
+
+  .note-card {
+    padding: 12px;
+  }
+
+  .note-card .note-text {
+    font-size: 13px;
+  }
+
+  .task-list {
+    max-width: 760px;
+  }
+
+  .empty {
+    text-align: left;
+    padding: 24px 2px;
   }
 
   /* sheets become centred cards instead of sliding up from the edge */
   .sheet {
     bottom: auto;
     top: 4vh;
-    width: 500px;
+    width: 480px;
     max-height: 92vh;
     border-radius: 28px;
     padding-bottom: 24px;
@@ -1386,11 +1412,11 @@ textarea {
   }
 
   .overlay .app {
-    max-width: 560px;
+    max-width: 600px;
   }
 
   .overlay .app.wall {
-    max-width: 780px;
+    max-width: 820px;
   }
 
   .cal-grid {
